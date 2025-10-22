@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:smart_home_control/core/design_tokens.dart';
 import 'package:smart_home_control/models/energy_point.dart';
+import 'package:smart_home_control/widgets/animated_reveal.dart';
 
 class EnergyBarChart extends StatelessWidget {
   const EnergyBarChart({
@@ -16,19 +17,21 @@ class EnergyBarChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 220,
-      child: GestureDetector(
-        onTapUp: (details) {
-          final box = context.findRenderObject() as RenderBox?;
-          if (box == null) return;
-          final local = box.globalToLocal(details.globalPosition);
-          final index = (local.dx ~/ (box.size.width / points.length))
-              .clamp(0, points.length - 1);
-          onSelect(points[index].month);
-        },
-        child: CustomPaint(
-          painter: _BarChartPainter(points, highlight, Theme.of(context)),
+    return AnimatedReveal(
+      child: SizedBox(
+        height: 220,
+        child: GestureDetector(
+          onTapUp: (details) {
+            final box = context.findRenderObject() as RenderBox?;
+            if (box == null) return;
+            final local = box.globalToLocal(details.globalPosition);
+            final index = (local.dx ~/ (box.size.width / points.length))
+                .clamp(0, points.length - 1);
+            onSelect(points[index].month);
+          },
+          child: CustomPaint(
+            painter: _BarChartPainter(points, highlight, Theme.of(context)),
+          ),
         ),
       ),
     );

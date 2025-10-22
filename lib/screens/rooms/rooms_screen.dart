@@ -21,6 +21,8 @@ class RoomsScreen extends StatelessWidget {
         final loc = scope.auth.localization;
         final settings = scope.settings;
         final budgetGuard = settings.isEnhancementEnabled('vacation_mode');
+        final roomsLabel = loc.t('label_rooms_generic');
+        final onlineLabel = loc.t('label_online_generic');
         return Scaffold(
           appBar: AppBar(title: Text(loc.t('rooms'))),
           body: SafeArea(
@@ -42,8 +44,15 @@ class RoomsScreen extends StatelessWidget {
                         title: loc.t('energy_consumption'),
                         subtitle: rooms.isEmpty
                             ? loc.t('no_devices_found')
-                            : '${rooms.length} ${loc.t('rooms').toLowerCase()}',
-                        trailing: '${rooms.fold<int>(0, (sum, room) => sum + room.devicesActive)} ${loc.t('filter_online').toLowerCase()}',
+                            : '${rooms.length} $roomsLabel',
+                        trailing:
+                            '${rooms.fold<int>(0, (sum, room) => sum + room.devicesActive)} $onlineLabel',
+                      ),
+                      const SizedBox(height: 12),
+                      FilledButton.icon(
+                        onPressed: () => Navigator.of(context).pushNamed(AppRoutes.roomsCarousel),
+                        icon: const Icon(Icons.view_carousel),
+                        label: Text(loc.t('open_room_carousel')),
                       ),
                       if (budgetGuard) ...[
                         const SizedBox(height: 12),
@@ -78,6 +87,7 @@ class RoomsScreen extends StatelessWidget {
                                   final room = rooms[index];
                                   return RoomCardLarge(
                                     room: room,
+                                    index: index,
                                     onTap: () => _openRoomDetail(context, scope, room),
                                   );
                                 },

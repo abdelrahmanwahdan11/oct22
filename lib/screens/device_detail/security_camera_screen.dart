@@ -62,21 +62,25 @@ class SecurityCameraScreen extends StatelessWidget {
               const SizedBox(height: 24),
               Text('Playback History', style: Theme.of(context).textTheme.titleMedium),
               const SizedBox(height: 12),
-              const Expanded(
+              Expanded(
                 child: SingleChildScrollView(
                   child: Column(
-                    children: [
+                    children: const [
                       EventListRow(
+                        index: 0,
                         title: 'Camera Back Online',
                         time: '8:30AM',
                         duration: '06min20sec',
                       ),
                       EventListRow(
+                        index: 1,
                         title: 'Person Spotted',
                         time: '7:10AM',
                         duration: '01min35sec',
+                        badge: 'Alert',
                       ),
                       EventListRow(
+                        index: 2,
                         title: 'Low Light Alert',
                         time: '6:20AM',
                         duration: '01min55sec',

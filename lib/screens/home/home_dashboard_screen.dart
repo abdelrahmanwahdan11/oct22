@@ -9,6 +9,7 @@ import 'package:smart_home_control/models/energy_point.dart';
 import 'package:smart_home_control/widgets/device_tile.dart';
 import 'package:smart_home_control/widgets/energy_capsule.dart';
 import 'package:smart_home_control/widgets/filter_chips.dart';
+import 'package:smart_home_control/widgets/feature_highlights.dart';
 import 'package:smart_home_control/widgets/room_mini_panel.dart';
 import 'package:smart_home_control/widgets/top_greeting_bar.dart';
 
@@ -38,7 +39,7 @@ class HomeDashboardScreen extends StatelessWidget {
         final rooms = roomsController.rooms.take(2).toList();
         final activeEnhancements = enhancementCatalog
             .where((option) => settings.isEnhancementEnabled(option.id))
-            .take(6)
+            .take(8)
             .toList();
         final budgetGuard = settings.isEnhancementEnabled('energy_budget_guard');
         final showEnergy = settings.isEnhancementEnabled('energy_saver') || budgetGuard;
@@ -96,6 +97,14 @@ class HomeDashboardScreen extends StatelessWidget {
                               label: Text(loc.t(option.chipKey)),
                             ),
                         ],
+                      ),
+                      const SizedBox(height: 16),
+                      FeatureHighlights(
+                        settings: settings,
+                        devices: devicesController,
+                        rooms: roomsController,
+                        energy: energy,
+                        localization: loc,
                       ),
                       const SizedBox(height: 16),
                     ],

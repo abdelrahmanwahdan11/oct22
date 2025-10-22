@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:smart_home_control/core/design_tokens.dart';
+import 'package:smart_home_control/widgets/animated_reveal.dart';
 
 typedef BottomNavCallback = void Function(int index);
 
@@ -23,24 +24,27 @@ class AppBottomBar extends StatelessWidget {
       top: false,
       child: Padding(
         padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            color: theme.colorScheme.surface,
-            borderRadius: BorderRadius.circular(AppRadii.bottomBar),
-            boxShadow: isDark ? null : AppShadows.soft,
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                for (var i = 0; i < items.length; i++)
-                  _BottomItem(
-                    data: items[i],
-                    selected: i == currentIndex,
-                    onTap: () => onChanged(i),
-                  ),
-              ],
+        child: AnimatedReveal(
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              color: theme.colorScheme.surface,
+              borderRadius: BorderRadius.circular(AppRadii.bottomBar),
+              boxShadow: isDark ? null : AppShadows.soft,
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  for (var i = 0; i < items.length; i++)
+                    _BottomItem(
+                      data: items[i],
+                      selected: i == currentIndex,
+                      onTap: () => onChanged(i),
+                      index: i,
+                    ),
+                ],
+              ),
             ),
           ),
         ),
@@ -66,11 +70,13 @@ class _BottomItem extends StatelessWidget {
     required this.data,
     required this.selected,
     required this.onTap,
+    required this.index,
   });
 
   final _BottomItemData data;
   final bool selected;
   final VoidCallback onTap;
+  final int index;
 
   @override
   Widget build(BuildContext context) {
@@ -84,30 +90,33 @@ class _BottomItem extends StatelessWidget {
     final iconColor = selected ? scheme.primary : scheme.onSurface.withOpacity(0.6);
     final textColor = selected ? scheme.onSurface : scheme.onSurface.withOpacity(0.6);
     return Expanded(
-      child: InkWell(
-        borderRadius: BorderRadius.circular(AppRadii.chip),
-        onTap: onTap,
-        child: AnimatedContainer(
-          duration: AppMotion.base,
-          curve: AppMotion.curve,
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-          decoration: BoxDecoration(
-            color: capsuleColor,
-            borderRadius: BorderRadius.circular(AppRadii.chip),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(data.icon, color: iconColor),
-              const SizedBox(height: 4),
-              Text(
-                data.label,
-                style: theme.textTheme.labelSmall?.copyWith(
-                  color: textColor,
-                  fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+      child: AnimatedReveal(
+        delayFactor: index,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(AppRadii.chip),
+          onTap: onTap,
+          child: AnimatedContainer(
+            duration: AppMotion.base,
+            curve: AppMotion.curve,
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            decoration: BoxDecoration(
+              color: capsuleColor,
+              borderRadius: BorderRadius.circular(AppRadii.chip),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(data.icon, color: iconColor),
+                const SizedBox(height: 4),
+                Text(
+                  data.label,
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: textColor,
+                    fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

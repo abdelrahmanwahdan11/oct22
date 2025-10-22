@@ -7,10 +7,12 @@ import 'package:smart_home_control/screens/device_detail/security_camera_screen.
 import 'package:smart_home_control/screens/devices/devices_screen.dart';
 import 'package:smart_home_control/screens/home/home_dashboard_screen.dart';
 import 'package:smart_home_control/screens/rooms/rooms_screen.dart';
+import 'package:smart_home_control/screens/rooms/rooms_carousel_screen.dart';
 
 class AppRoutes {
   static const home = 'home.dashboard';
   static const rooms = 'rooms.list';
+  static const roomsCarousel = 'rooms.carousel';
   static const devices = 'devices.list';
   static const deviceClimate = 'device.climate';
   static const deviceCamera = 'device.camera';
@@ -29,6 +31,8 @@ class AppRouter {
         return _fadeSlide(const HomeDashboardScreen(), settings);
       case AppRoutes.rooms:
         return _fadeSlide(const RoomsScreen(), settings);
+      case AppRoutes.roomsCarousel:
+        return _fadeSlide(const RoomsCarouselScreen(), settings);
       case AppRoutes.devices:
         return _fadeSlide(const DevicesScreen(), settings);
       case AppRoutes.deviceClimate:

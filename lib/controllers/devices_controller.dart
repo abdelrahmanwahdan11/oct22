@@ -53,11 +53,16 @@ class DevicesController extends ChangeNotifier {
     return list.toList();
   }
 
+  List<Device> get allDevices => List.unmodifiable(_devices);
+
   bool get isLoading => _loading;
   String get search => _search;
   String get filterRoom => _filterRoom;
   DeviceStatusFilter get statusFilter => _statusFilter;
   bool get isGridLayout => _gridLayout;
+  int get scheduleCount => _schedules.length;
+  int get favoriteCount => _favorites.length;
+  int get sceneCount => 4;
   List<DeviceTemplate> get catalog => List.unmodifiable(MockData.deviceCatalog);
 
   Future<void> load() async {
