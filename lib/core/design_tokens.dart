@@ -14,6 +14,15 @@ class AppColors {
   static const danger = Color(0xFFF04438);
 }
 
+class AppDarkColors {
+  static const bg = Color(0xFF0B1220);
+  static const surface = Color(0xFF111A2E);
+  static const textPrimary = Color(0xFFF8FAFC);
+  static const textSecondary = Color(0xFF94A3B8);
+  static const border = Color(0xFF1E293B);
+  static const blueSoft = Color(0xFF1E3A5C);
+}
+
 class AppRadii {
   static const xxl = 28.0;
   static const xl = 22.0;

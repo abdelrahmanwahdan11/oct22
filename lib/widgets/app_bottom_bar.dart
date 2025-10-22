@@ -17,15 +17,17 @@ class AppBottomBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     return SafeArea(
       top: false,
       child: Padding(
         padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
         child: DecoratedBox(
           decoration: BoxDecoration(
-            color: AppColors.surface,
+            color: theme.colorScheme.surface,
             borderRadius: BorderRadius.circular(AppRadii.bottomBar),
-            boxShadow: AppShadows.soft,
+            boxShadow: isDark ? null : AppShadows.soft,
           ),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
@@ -73,7 +75,14 @@ class _BottomItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final color = selected ? AppColors.blueDark : AppColors.textSecondary;
+    final scheme = theme.colorScheme;
+    final capsuleColor = selected
+        ? (scheme.brightness == Brightness.dark
+            ? scheme.primary.withOpacity(0.18)
+            : scheme.primary.withOpacity(0.12))
+        : Colors.transparent;
+    final iconColor = selected ? scheme.primary : scheme.onSurface.withOpacity(0.6);
+    final textColor = selected ? scheme.onSurface : scheme.onSurface.withOpacity(0.6);
     return Expanded(
       child: InkWell(
         borderRadius: BorderRadius.circular(AppRadii.chip),
@@ -83,18 +92,18 @@ class _BottomItem extends StatelessWidget {
           curve: AppMotion.curve,
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           decoration: BoxDecoration(
-            color: selected ? AppColors.blueSoft : Colors.transparent,
+            color: capsuleColor,
             borderRadius: BorderRadius.circular(AppRadii.chip),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(data.icon, color: color),
+              Icon(data.icon, color: iconColor),
               const SizedBox(height: 4),
               Text(
                 data.label,
                 style: theme.textTheme.labelSmall?.copyWith(
-                  color: selected ? AppColors.textPrimary : AppColors.textSecondary,
+                  color: textColor,
                   fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
                 ),
               ),
@@ -106,11 +115,16 @@ class _BottomItem extends StatelessWidget {
   }
 }
 
-List<_BottomItemData> buildBottomItems(TextTheme textTheme) {
-  return const [
-    _BottomItemData(id: 'home', label: 'HOME', icon: Icons.home),
-    _BottomItemData(id: 'device', label: 'DEVICE', icon: Icons.grid_view),
-    _BottomItemData(id: 'room', label: 'ROOM', icon: Icons.door_sliding),
-    _BottomItemData(id: 'more', label: 'MORE', icon: Icons.person),
+List<_BottomItemData> buildBottomItems({
+  required String home,
+  required String devices,
+  required String rooms,
+  required String more,
+}) {
+  return [
+    _BottomItemData(id: 'home', label: home, icon: Icons.home),
+    _BottomItemData(id: 'device', label: devices, icon: Icons.grid_view),
+    _BottomItemData(id: 'room', label: rooms, icon: Icons.door_sliding),
+    _BottomItemData(id: 'more', label: more, icon: Icons.person),
   ];
 }

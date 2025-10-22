@@ -10,7 +10,7 @@ class DevicesRepository {
   DevicesRepository();
 
   static const _prefsKey = 'devices_v1';
-  final List<Device> _devices = List.of(MockData.devices);
+  final List<Device> _devices = [];
   bool _hydrated = false;
 
   Future<List<Device>> fetchDevices() async {
@@ -58,57 +58,21 @@ class DevicesRepository {
     final raw = prefs.getString(_prefsKey);
     if (raw != null) {
       final decoded = jsonDecode(raw) as List<dynamic>;
-      for (final json in decoded) {
-        final map = json as Map<String, dynamic>;
-        final index = _devices.indexWhere((device) => device.id == map['id']);
-        if (index != -1) {
-          _devices[index] = _devices[index].copyWith(
-            isOn: map['isOn'] as bool?,
-            targetTemp: (map['targetTemp'] as num?)?.toDouble(),
-            schedule: _decodeSchedule(map['schedule'] as Map<String, dynamic>?),
-            activeMode: map['activeMode'] as String?,
-          );
-        }
-      }
+      _devices
+        ..clear()
+        ..addAll(decoded.map((json) => Device.fromJson(json as Map<String, dynamic>)));
+    } else {
+      _devices
+        ..clear()
+        ..addAll(MockData.devices);
+      await _persist();
     }
     _hydrated = true;
   }
 
   Future<void> _persist() async {
     final prefs = await SharedPreferences.getInstance();
-    final payload = _devices
-        .map((device) => {
-              'id': device.id,
-              'isOn': device.isOn,
-              'targetTemp': device.targetTemp,
-              'schedule': _encodeSchedule(device.schedule),
-              'activeMode': device.activeMode,
-            })
-        .toList();
+    final payload = _devices.map((device) => device.toJson()).toList();
     await prefs.setString(_prefsKey, jsonEncode(payload));
-  }
-
-  Map<String, dynamic>? _encodeSchedule(Schedule? schedule) {
-    if (schedule == null) return null;
-    return {
-      'id': schedule.id,
-      'deviceId': schedule.deviceId,
-      'enabled': schedule.enabled,
-      'start': schedule.start,
-      'end': schedule.end,
-      'repeat': schedule.repeat,
-    };
-  }
-
-  Schedule? _decodeSchedule(Map<String, dynamic>? json) {
-    if (json == null) return null;
-    return Schedule(
-      id: json['id'] as String,
-      deviceId: json['deviceId'] as String,
-      enabled: json['enabled'] as bool? ?? false,
-      start: json['start'] as String? ?? '',
-      end: json['end'] as String? ?? '',
-      repeat: (json['repeat'] as List<dynamic>? ?? []).cast<String>(),
-    );
   }
 }

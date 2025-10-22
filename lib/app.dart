@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:smart_home_control/controllers/access_controller.dart';
+import 'package:smart_home_control/controllers/auth_controller.dart';
 import 'package:smart_home_control/controllers/devices_controller.dart';
 import 'package:smart_home_control/controllers/energy_controller.dart';
 import 'package:smart_home_control/controllers/rooms_controller.dart';
@@ -9,7 +10,7 @@ import 'package:smart_home_control/core/app_localizations.dart';
 import 'package:smart_home_control/core/app_router.dart';
 import 'package:smart_home_control/core/app_theme.dart';
 import 'package:smart_home_control/core/controller_provider.dart';
-import 'package:smart_home_control/screens/home/home_shell.dart';
+import 'package:smart_home_control/screens/auth/auth_gate.dart';
 
 class SmartHomeApp extends StatefulWidget {
   const SmartHomeApp({
@@ -19,6 +20,7 @@ class SmartHomeApp extends StatefulWidget {
     required this.energyController,
     required this.accessController,
     required this.settingsController,
+    required this.authController,
     required this.localization,
   });
 
@@ -27,6 +29,7 @@ class SmartHomeApp extends StatefulWidget {
   final EnergyController energyController;
   final AccessController accessController;
   final SettingsController settingsController;
+  final AuthController authController;
   final AppLocalizations localization;
 
   @override
@@ -42,6 +45,7 @@ class _SmartHomeAppState extends State<SmartHomeApp> {
     _listenable = Listenable.merge([
       widget.settingsController,
       widget.localization,
+      widget.authController,
     ]);
   }
 
@@ -57,6 +61,7 @@ class _SmartHomeAppState extends State<SmartHomeApp> {
           energy: widget.energyController,
           access: widget.accessController,
           settings: widget.settingsController,
+          auth: widget.authController,
           child: MaterialApp(
             title: 'Smart Home Control',
             debugShowCheckedModeBanner: false,
@@ -81,7 +86,7 @@ class _SmartHomeAppState extends State<SmartHomeApp> {
               );
             },
             onGenerateRoute: AppRouter.onGenerateRoute,
-            home: const HomeShell(),
+            home: const AuthGate(),
           ),
         );
       },

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:smart_home_control/data/mock_data.dart';
 import 'package:smart_home_control/models/device.dart';
+import 'package:smart_home_control/models/device_template.dart';
 import 'package:smart_home_control/models/schedule.dart';
 import 'package:smart_home_control/repositories/devices_repository.dart';
 import 'package:smart_home_control/repositories/settings_repository.dart';
@@ -37,6 +38,7 @@ class DevicesController extends ChangeNotifier {
   bool get isLoading => _loading;
   String get search => _search;
   String get filterRoom => _filterRoom;
+  List<DeviceTemplate> get catalog => List.unmodifiable(MockData.deviceCatalog);
 
   Future<void> load() async {
     _loading = true;
@@ -72,6 +74,32 @@ class DevicesController extends ChangeNotifier {
       _devices[index] = _devices[index].copyWith(isOn: isOn);
       notifyListeners();
     }
+  }
+
+  Future<Device> addFromTemplate(
+    DeviceTemplate template,
+    String roomId, {
+    String? roomName,
+  }) async {
+    final id = 'cd_${DateTime.now().millisecondsSinceEpoch}';
+    final device = Device(
+      id: id,
+      name: template.name,
+      type: template.type,
+      roomId: roomId,
+      image: template.image,
+      isOn: false,
+      modes: template.modes,
+      temperature: template.temperature,
+      targetTemp: template.targetTemp,
+    );
+    await _repository.addDevice(device);
+    _devices.add(device);
+    if (roomName != null) {
+      _roomNames[roomId] = roomName;
+    }
+    notifyListeners();
+    return device;
   }
 
   Future<void> setTargetTemperature(String id, double target) async {

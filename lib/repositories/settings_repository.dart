@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smart_home_control/models/access_rule.dart';
 import 'package:smart_home_control/models/device.dart';

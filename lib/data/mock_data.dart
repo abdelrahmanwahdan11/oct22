@@ -1,7 +1,9 @@
 import 'package:smart_home_control/models/access_rule.dart';
 import 'package:smart_home_control/models/device.dart';
+import 'package:smart_home_control/models/device_template.dart';
 import 'package:smart_home_control/models/energy_point.dart';
 import 'package:smart_home_control/models/room.dart';
+import 'package:smart_home_control/models/schedule.dart';
 
 class MockData {
   static final rooms = <Room>[
@@ -146,6 +148,42 @@ class MockData {
       description: 'All Members Access',
       enabled: true,
       visibility: 'members',
+    ),
+  ];
+
+  static final deviceCatalog = <DeviceTemplate>[
+    const DeviceTemplate(
+      id: 'tpl_ac',
+      name: 'Cool Breeze AC',
+      type: DeviceType.climate,
+      image: 'assets/images/device_ac.png',
+      modes: ['Cooling', 'Dry', 'Heating', 'Fan'],
+      temperature: 24,
+      targetTemp: 24,
+    ),
+    const DeviceTemplate(
+      id: 'tpl_light',
+      name: 'Luma Smart Light',
+      type: DeviceType.light,
+      image: 'assets/images/device_lamp.png',
+    ),
+    const DeviceTemplate(
+      id: 'tpl_camera',
+      name: 'Guardian Camera',
+      type: DeviceType.camera,
+      image: 'assets/images/device_camera.png',
+    ),
+    const DeviceTemplate(
+      id: 'tpl_speaker',
+      name: 'Wave Speaker',
+      type: DeviceType.speaker,
+      image: 'assets/images/device_speaker.png',
+    ),
+    const DeviceTemplate(
+      id: 'tpl_robot',
+      name: 'Helper Robot',
+      type: DeviceType.robot,
+      image: 'assets/images/device_robot.png',
     ),
   ];
 }

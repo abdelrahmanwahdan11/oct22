@@ -11,12 +11,14 @@ class RoomsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scope = ControllerScope.of(context);
+    final listenable = Listenable.merge([scope.rooms, scope.auth]);
     return AnimatedBuilder(
-      animation: scope.rooms,
+      animation: listenable,
       builder: (context, _) {
         final rooms = scope.rooms.rooms;
+        final loc = scope.auth.localization;
         return Scaffold(
-          appBar: AppBar(title: const Text('My Rooms')),
+          appBar: AppBar(title: Text(loc.t('rooms'))),
           body: SafeArea(
             child: Padding(
               padding: const EdgeInsets.all(20),
@@ -29,9 +31,9 @@ class RoomsScreen extends StatelessWidget {
                     onSelected: scope.rooms.setFilter,
                   ),
                   const SizedBox(height: 12),
-                  const EnergyCapsule(
-                    title: 'Energy Consumption',
-                    subtitle: 'This Week Data Updated',
+                  EnergyCapsule(
+                    title: loc.t('energy_consumption'),
+                    subtitle: loc.t('energy_analysis'),
                     trailing: '1962kwh',
                   ),
                   const SizedBox(height: 12),
@@ -50,7 +52,7 @@ class RoomsScreen extends StatelessWidget {
                   OutlinedButton.icon(
                     onPressed: () {},
                     icon: const Icon(Icons.add),
-                    label: const Text('Add Room'),
+                    label: Text(loc.t('add_room')),
                   ),
                 ],
               ),

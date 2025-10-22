@@ -3,28 +3,39 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:smart_home_control/core/design_tokens.dart';
 
 ThemeData buildAppTheme(Brightness brightness) {
+  final isDark = brightness == Brightness.dark;
+  final background = isDark ? AppDarkColors.bg : AppColors.bg;
+  final surface = isDark ? AppDarkColors.surface : AppColors.surface;
+  final textPrimary = isDark ? AppDarkColors.textPrimary : AppColors.textPrimary;
+  final textSecondary = isDark ? AppDarkColors.textSecondary : AppColors.textSecondary;
+  final borderColor = isDark ? AppDarkColors.border : AppColors.border;
+  final chipSelected = isDark ? AppDarkColors.blueSoft : AppColors.blueSoft;
+
   final colorScheme = ColorScheme.fromSeed(
     seedColor: AppColors.blue,
     brightness: brightness,
-    background: AppColors.bg,
-    surface: AppColors.surface,
+  ).copyWith(
+    background: background,
+    surface: surface,
+    onBackground: textPrimary,
+    onSurface: textPrimary,
   );
 
   final textTheme = TextTheme(
     displayLarge: GoogleFonts.poppins(
       fontSize: AppTypography.h1,
       fontWeight: FontWeight.w600,
-      color: AppColors.textPrimary,
+      color: textPrimary,
     ),
     displayMedium: GoogleFonts.poppins(
       fontSize: AppTypography.h2,
       fontWeight: FontWeight.w600,
-      color: AppColors.textPrimary,
+      color: textPrimary,
     ),
     titleMedium: GoogleFonts.poppins(
       fontSize: AppTypography.h3,
       fontWeight: FontWeight.w500,
-      color: AppColors.textPrimary,
+      color: textPrimary,
     ),
     bodyLarge: GoogleFonts.poppins(
       fontSize: AppTypography.body,
@@ -34,25 +45,25 @@ ThemeData buildAppTheme(Brightness brightness) {
     bodyMedium: GoogleFonts.poppins(
       fontSize: AppTypography.body,
       fontWeight: FontWeight.w400,
-      color: AppColors.textSecondary,
+      color: textSecondary,
     ),
     labelSmall: GoogleFonts.poppins(
       fontSize: AppTypography.label,
       fontWeight: FontWeight.w500,
-      color: AppColors.textSecondary,
+      color: textSecondary,
     ),
   );
 
   final chipTheme = ChipThemeData(
     shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(AppRadii.chip),
-      side: const BorderSide(color: AppColors.border),
+      side: BorderSide(color: borderColor),
     ),
-    backgroundColor: AppColors.surface,
-    selectedColor: AppColors.blueSoft,
+    backgroundColor: surface,
+    selectedColor: chipSelected,
     labelStyle: GoogleFonts.poppins(
       fontSize: AppTypography.body,
-      color: AppColors.textPrimary,
+      color: textPrimary,
     ),
     secondaryLabelStyle: GoogleFonts.poppins(
       fontSize: AppTypography.body,
@@ -82,23 +93,23 @@ ThemeData buildAppTheme(Brightness brightness) {
     textTheme: textTheme,
     chipTheme: chipTheme,
     elevatedButtonTheme: elevatedButtonTheme,
-    scaffoldBackgroundColor: AppColors.bg,
+    scaffoldBackgroundColor: background,
     appBarTheme: AppBarTheme(
-      backgroundColor: AppColors.bg,
+      backgroundColor: background,
       elevation: 0,
       titleTextStyle: GoogleFonts.poppins(
         fontSize: AppTypography.h2,
         fontWeight: FontWeight.w600,
-        color: AppColors.textPrimary,
+        color: textPrimary,
       ),
-      foregroundColor: AppColors.textPrimary,
+      foregroundColor: textPrimary,
     ),
     bottomNavigationBarTheme: BottomNavigationBarThemeData(
       backgroundColor: AppColors.surface,
-      selectedItemColor: AppColors.textPrimary,
-      unselectedItemColor: AppColors.textSecondary,
-      selectedIconTheme: const IconThemeData(color: AppColors.blueDark),
-      unselectedIconTheme: const IconThemeData(color: AppColors.textSecondary),
+      selectedItemColor: colorScheme.primary,
+      unselectedItemColor: textSecondary,
+      selectedIconTheme: IconThemeData(color: colorScheme.primary),
+      unselectedIconTheme: IconThemeData(color: textSecondary),
       selectedLabelStyle: GoogleFonts.poppins(
         fontWeight: FontWeight.w600,
         fontSize: 12,
@@ -111,10 +122,10 @@ ThemeData buildAppTheme(Brightness brightness) {
     ),
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
-      fillColor: AppColors.surface,
+      fillColor: surface,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(AppRadii.lg),
-        borderSide: const BorderSide(color: AppColors.border),
+        borderSide: BorderSide(color: borderColor),
       ),
     ),
   );

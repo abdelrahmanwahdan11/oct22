@@ -15,6 +15,16 @@ class RoomsController extends ChangeNotifier {
     return _rooms.where((room) => room.name.contains(_filter)).toList();
   }
 
+  List<Room> get allRooms => List.unmodifiable(_rooms);
+
+  Room? findById(String id) {
+    try {
+      return _rooms.firstWhere((room) => room.id == id);
+    } catch (_) {
+      return null;
+    }
+  }
+
   String get filter => _filter;
   bool get isLoading => _loading;
 
