@@ -112,10 +112,32 @@ class StatisticsScreen extends StatelessWidget {
                           ),
                         ),
                       ),
+                      const SizedBox(height: 12),
+                      AnimatedEntry(
+                        delay: const Duration(milliseconds: 320),
+                        child: Wrap(
+                          spacing: 12,
+                          runSpacing: 8,
+                          children: [
+                            TextButton.icon(
+                              onPressed: () => Navigator.of(context)
+                                  .pushNamed(AppNavigation.routes['route.history']!),
+                              icon: const Icon(Icons.history),
+                              label: Text(strings.t('view_history_action')),
+                            ),
+                            TextButton.icon(
+                              onPressed: () => Navigator.of(context)
+                                  .pushNamed(AppNavigation.routes['route.suggestions']!),
+                              icon: const Icon(Icons.playlist_add_check_outlined),
+                              label: Text(strings.t('view_orders_action')),
+                            ),
+                          ],
+                        ),
+                      ),
                       if (vehicle != null) ...[
                         const SizedBox(height: 24),
                         AnimatedEntry(
-                          delay: const Duration(milliseconds: 340),
+                          delay: const Duration(milliseconds: 360),
                           child: Text('VIN ${vehicle.vin} • ${vehicle.name}'),
                         ),
                       ],

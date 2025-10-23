@@ -15,9 +15,13 @@ import 'screens/auth/register_screen.dart';
 import 'screens/distribution_screen.dart';
 import 'screens/map_optimization_screen.dart';
 import 'screens/planning_screen.dart';
+import 'screens/route_history_screen.dart';
+import 'screens/suggested_orders_screen.dart';
 import 'screens/settings_screen.dart';
 import 'screens/statistics_screen.dart';
+import 'screens/vehicle_overview_screen.dart';
 import 'screens/onboarding_screen.dart';
+import 'screens/stop_detail_screen.dart';
 import 'screens/timeline_cockpit_screen.dart';
 
 class FleetPlannerApp extends StatelessWidget {
@@ -129,6 +133,27 @@ class FleetPlannerApp extends StatelessWidget {
         break;
       case '/map.optimization':
         page = MapOptimizationScreen(routeController: routeController);
+        break;
+      case '/route/history':
+        page = RouteHistoryScreen(routeController: routeController);
+        break;
+      case '/route/suggestions':
+        page = SuggestedOrdersScreen(routeController: routeController);
+        break;
+      case '/stop/detail':
+        final args = settings.arguments as StopDetailArgs? ??
+            const StopDetailArgs(stopId: '', fromSuggestions: false);
+        page = StopDetailScreen(
+          routeController: routeController,
+          vehicleController: vehicleController,
+          args: args,
+        );
+        break;
+      case '/vehicle/overview':
+        page = VehicleOverviewScreen(
+          vehicleController: vehicleController,
+          routeController: routeController,
+        );
         break;
       case '/settings':
         page = SettingsScreen(settingsController: settingsController);

@@ -68,4 +68,74 @@ class RouteRepository {
       ChartPoint(x: 23.0, y: 22),
     ];
   }
+
+  Future<List<RouteSummary>> fetchRouteHistory() async {
+    await Future.delayed(const Duration(milliseconds: 200));
+    return const [
+      RouteSummary(
+        id: 'h1',
+        title: 'PB-LP-PB Scenario',
+        date: DateTime(2025, 12, 18),
+        distanceMi: 940,
+        weightLb: 6240,
+        status: 'completed',
+        onTimeRate: 0.92,
+        stops: 8,
+        isActive: true,
+      ),
+      RouteSummary(
+        id: 'h2',
+        title: 'Mesa Night Run',
+        date: DateTime(2025, 12, 12),
+        distanceMi: 1080,
+        weightLb: 7820,
+        status: 'completed',
+        onTimeRate: 0.87,
+        stops: 10,
+      ),
+      RouteSummary(
+        id: 'h3',
+        title: 'Utica Express',
+        date: DateTime(2025, 12, 4),
+        distanceMi: 860,
+        weightLb: 6980,
+        status: 'delayed',
+        onTimeRate: 0.74,
+        stops: 6,
+      ),
+    ];
+  }
+
+  Future<List<Stop>> fetchSuggestedStops() async {
+    await Future.delayed(const Duration(milliseconds: 220));
+    return const [
+      Stop(
+        id: 'ns1',
+        code: '555883221',
+        address: '4886 Main St, Plano',
+        pallets: 2,
+        weightLb: 640,
+        eta: '11:10',
+        selected: false,
+      ),
+      Stop(
+        id: 'ns2',
+        code: '441230198',
+        address: '7129 Prospect Ave, Dallas',
+        pallets: 4,
+        weightLb: 1890,
+        eta: '12:35',
+        selected: true,
+      ),
+      Stop(
+        id: 'ns3',
+        code: '126983450',
+        address: '3231 Hill Rd, Phoenix',
+        pallets: 1,
+        weightLb: 420,
+        eta: '14:20',
+        selected: false,
+      ),
+    ];
+  }
 }

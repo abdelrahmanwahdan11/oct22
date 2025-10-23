@@ -35,6 +35,10 @@ class AppNavigation {
     'statistics': '/statistics',
     'timeline.cockpit': '/timeline.cockpit',
     'map.optimization': '/map.optimization',
+    'route.history': '/route/history',
+    'route.suggestions': '/route/suggestions',
+    'stop.detail': '/stop/detail',
+    'vehicle.overview': '/vehicle/overview',
     'settings': '/settings',
   };
 }

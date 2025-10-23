@@ -8,6 +8,7 @@ import '../core/navigation.dart';
 import '../l10n/app_localizations.dart';
 import '../models/models.dart';
 import '../widgets/animated_entry.dart';
+import '../widgets/assign_compartment_sheet.dart';
 import '../widgets/decorated_scaffold.dart';
 import '../widgets/floating_dot_menu.dart';
 import '../widgets/metric_row.dart';
@@ -16,6 +17,7 @@ import '../widgets/top_tabs.dart';
 import '../widgets/toolbar_bottom.dart';
 import '../widgets/truck_side_diagram.dart';
 import '../widgets/view_mode_rail.dart';
+import 'stop_detail_screen.dart' show StopDetailArgs;
 
 class PlanningScreen extends StatelessWidget {
   const PlanningScreen({
@@ -35,6 +37,17 @@ class PlanningScreen extends StatelessWidget {
         title: Text(strings.t('planning')),
         actions: [
           IconButton(
+            tooltip: strings.t('view_history'),
+            icon: const Icon(Icons.history),
+            onPressed: () => Navigator.of(context).pushNamed(AppNavigation.routes['route.history']!),
+          ),
+          IconButton(
+            tooltip: strings.t('view_orders_action'),
+            icon: const Icon(Icons.inventory_2_outlined),
+            onPressed: () => Navigator.of(context).pushNamed(AppNavigation.routes['route.suggestions']!),
+          ),
+          IconButton(
+            tooltip: strings.t('settings'),
             icon: const Icon(Icons.settings_outlined),
             onPressed: () => Navigator.of(context).pushNamed(AppNavigation.routes['settings']!),
           ),
@@ -50,6 +63,10 @@ class PlanningScreen extends StatelessWidget {
         builder: (context, _) {
           final vehicle = vehicleController.vehicle;
           final stops = routeController.stops;
+          final compartments = vehicleController.compartments;
+          final compartmentLabels = {
+            for (final compartment in compartments) compartment.id: compartment.label,
+          };
           return LayoutBuilder(
             builder: (context, constraints) {
               final isWide = constraints.maxWidth > 900;
@@ -97,17 +114,31 @@ class PlanningScreen extends StatelessWidget {
                     if (vehicle != null)
                       AnimatedEntry(
                         delay: const Duration(milliseconds: 200),
-                        child: MetricRow(
-                          metrics: [
-                            MetricValue(label: 'VIN', value: vehicle.vin),
-                            MetricValue(
-                              label: strings.t('distance'),
-                              value: '${formatNumber(vehicle.miles)} ${strings.t('mi')}',
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            MetricRow(
+                              metrics: [
+                                MetricValue(label: 'VIN', value: vehicle.vin),
+                                MetricValue(
+                                  label: strings.t('distance'),
+                                  value: '${formatNumber(vehicle.miles)} ${strings.t('mi')}',
+                                ),
+                                MetricValue(
+                                  label: strings.t('weight_total'),
+                                  value:
+                                      '${formatNumber(routeController.totalWeight)} / ${formatNumber(vehicle.capacityLb)} ${strings.t('lb')}',
+                                ),
+                              ],
                             ),
-                            MetricValue(
-                              label: strings.t('weight_total'),
-                              value:
-                                  '${formatNumber(routeController.totalWeight)} / ${formatNumber(vehicle.capacityLb)} ${strings.t('lb')}',
+                            Align(
+                              alignment: AlignmentDirectional.centerStart,
+                              child: TextButton.icon(
+                                onPressed: () => Navigator.of(context)
+                                    .pushNamed(AppNavigation.routes['vehicle.overview']!),
+                                icon: const Icon(Icons.dashboard_customize_outlined),
+                                label: Text(strings.t('view_vehicle_overview')),
+                              ),
                             ),
                           ],
                         ),
@@ -120,12 +151,15 @@ class PlanningScreen extends StatelessWidget {
                           switch (action) {
                             case 'weight':
                               routeController.sortByWeight();
+                              _showSnack(context, strings.t('sorted_by_weight'));
                               break;
                             case 'pallets':
                               routeController.sortByPallets();
+                              _showSnack(context, strings.t('sorted_by_pallets'));
                               break;
                             case 'auto':
                               routeController.autoAssignStops();
+                              _showSnack(context, strings.t('auto_assigned'));
                               break;
                           }
                         },
@@ -146,6 +180,14 @@ class PlanningScreen extends StatelessWidget {
                           : _StopsList(
                               stops: stops,
                               controller: routeController,
+                              compartmentLabels: compartmentLabels,
+                              onAssign: (stop) => _openAssignSheet(context, stop),
+                              onShowDetails: (stop) => _openStopDetails(context, stop, fromSuggestions: false),
+                              onShowReorderHint: () => _showSnack(context, strings.t('reorder_hint')),
+                              onDelete: (stop) {
+                                routeController.deleteStop(stop.id);
+                                _showSnack(context, strings.t('deleted_stop'));
+                              },
                             ),
                     ),
                   ],
@@ -173,13 +215,66 @@ class PlanningScreen extends StatelessWidget {
         break;
     }
   }
+
+  Future<void> _openAssignSheet(BuildContext context, Stop stop) async {
+    final strings = AppLocalizations.of(context);
+    final selection = await showAssignCompartmentSheet(
+      context: context,
+      compartments: vehicleController.compartments,
+      stop: stop,
+    );
+    if (selection == null) {
+      return;
+    }
+    if (selection == removeAssignmentValue) {
+      routeController.removeStopAssignment(stop.id);
+      _showSnack(context, strings.t('assignment_cleared'));
+    } else {
+      routeController.assignStopToCompartment(stop.id, selection);
+      _showSnack(context, strings.t('assignment_updated'));
+    }
+  }
+
+  void _openStopDetails(BuildContext context, Stop stop, {required bool fromSuggestions}) {
+    Navigator.of(context).pushNamed(
+      AppNavigation.routes['stop.detail']!,
+      arguments: StopDetailArgs(stopId: stop.id, fromSuggestions: fromSuggestions),
+    );
+  }
+
+  void _showSnack(BuildContext context, String message) {
+    if (message.isEmpty) {
+      return;
+    }
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(message),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+  }
 }
 
 class _StopsList extends StatelessWidget {
-  const _StopsList({required this.stops, required this.controller});
+  const _StopsList({
+    required this.stops,
+    required this.controller,
+    required this.compartmentLabels,
+    required this.onAssign,
+    required this.onShowDetails,
+    required this.onShowReorderHint,
+    required this.onDelete,
+  });
 
   final List<Stop> stops;
   final RouteController controller;
+  final Map<String, String> compartmentLabels;
+  final ValueChanged<Stop> onAssign;
+  final ValueChanged<Stop> onShowDetails;
+  final VoidCallback onShowReorderHint;
+  final ValueChanged<Stop> onDelete;
 
   @override
   Widget build(BuildContext context) {
@@ -206,11 +301,21 @@ class _StopsList extends StatelessWidget {
             ),
             child: StopTile(
               stop: stop,
+              assignedLabel: compartmentLabels[stop.lockedToCompartmentId],
               onToggleSelect: () => controller.toggleStopSelection(stop.id),
-              onAssign: () {},
+              onAssign: () => onAssign(stop),
+              onTap: () => onShowDetails(stop),
               onActionSelected: (action) {
-                if (action == 'assign') {
-                  controller.toggleStopSelection(stop.id);
+                switch (action) {
+                  case 'assign':
+                    onAssign(stop);
+                    break;
+                  case 'reorder':
+                    onShowReorderHint();
+                    break;
+                  case 'delete':
+                    onDelete(stop);
+                    break;
                 }
               },
               dragHandle: ReorderableDragStartListener(

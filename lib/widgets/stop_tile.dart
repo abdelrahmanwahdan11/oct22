@@ -11,6 +11,9 @@ class StopTile extends StatelessWidget {
     this.onToggleSelect,
     this.onActionSelected,
     this.onAssign,
+    this.onTap,
+    this.assignedLabel,
+    this.showAssignButton = true,
     this.dragHandle,
   });
 
@@ -18,117 +21,150 @@ class StopTile extends StatelessWidget {
   final VoidCallback? onToggleSelect;
   final ValueChanged<String>? onActionSelected;
   final VoidCallback? onAssign;
+  final VoidCallback? onTap;
+  final String? assignedLabel;
+  final bool showAssignButton;
   final Widget? dragHandle;
 
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     final strings = AppLocalizations.of(context);
+    final assigned = assignedLabel;
     return AnimatedScale(
       scale: stop.selected ? 1.02 : 1,
       duration: AppMotion.base,
-      child: AnimatedContainer(
-        duration: AppMotion.base,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
           borderRadius: BorderRadius.circular(AppRadii.radiusLG.x),
-          boxShadow: [AppShadows.soft],
-          border: Border.all(
-            color: stop.selected
-                ? AppColors.limeDark.withOpacity(0.4)
-                : Colors.transparent,
-            width: 1.2,
-          ),
-        ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            GestureDetector(
-              onTap: onAssign,
-              child: Container(
-                height: 44,
-                width: 44,
-                decoration: BoxDecoration(
-                  color: AppColors.lime,
-                  borderRadius: BorderRadius.circular(24),
-                ),
-                child: const Icon(Icons.add, color: AppColors.textPrimary),
+          child: AnimatedContainer(
+            duration: AppMotion.base,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surface,
+              borderRadius: BorderRadius.circular(AppRadii.radiusLG.x),
+              boxShadow: [AppShadows.soft],
+              border: Border.all(
+                color: stop.selected ? AppColors.limeDark.withOpacity(0.4) : Colors.transparent,
+                width: 1.2,
               ),
             ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Text(
-                        stop.code,
-                        style: textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w600,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (showAssignButton)
+                  Tooltip(
+                    message: strings.t('assign_compartment'),
+                    child: InkWell(
+                      onTap: onAssign,
+                      borderRadius: BorderRadius.circular(24),
+                      child: Container(
+                        height: 44,
+                        width: 44,
+                        decoration: BoxDecoration(
+                          color: AppColors.lime,
+                          borderRadius: BorderRadius.circular(24),
                         ),
+                        child: const Icon(Icons.add, color: AppColors.textPrimary),
                       ),
-                      const SizedBox(width: 8),
-                      if (stop.selected)
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: AppColors.limeSoft,
-                            borderRadius: BorderRadius.circular(AppRadii.radiusChip.x),
-                          ),
-                          child: Text(
-                            strings.t('selected'),
-                            style: textTheme.bodySmall?.copyWith(
-                              color: AppColors.textPrimary,
+                    ),
+                  )
+                else
+                  const SizedBox(width: 4),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text(
+                            stop.code,
+                            style: textTheme.titleMedium?.copyWith(
                               fontWeight: FontWeight.w600,
                             ),
                           ),
+                          const SizedBox(width: 8),
+                          if (stop.selected)
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: AppColors.limeSoft,
+                                borderRadius: BorderRadius.circular(AppRadii.radiusChip.x),
+                              ),
+                              child: Text(
+                                strings.t('selected'),
+                                style: textTheme.bodySmall?.copyWith(
+                                  color: AppColors.textPrimary,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          if (assigned != null) ...[
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: AppColors.blue.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(AppRadii.radiusChip.x),
+                              ),
+                              child: Text(
+                                '${strings.t('compartment')} $assigned',
+                                style: textTheme.bodySmall?.copyWith(
+                                  color: AppColors.blue,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        stop.address,
+                        style: textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 10),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 4,
+                        children: [
+                          _Badge(label: '${stop.pallets} ${strings.t('pallets')}'),
+                          _Badge(label: '${stop.weightLb} ${strings.t('lb')}'),
+                          _Badge(label: '${strings.t('eta_label')} ${stop.eta}'),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Column(
+                  children: [
+                    _DotMenu(onSelected: onActionSelected),
+                    if (dragHandle != null) ...[
+                      const SizedBox(height: 16),
+                      dragHandle!,
+                    ],
+                    if (onToggleSelect != null) ...[
+                      const SizedBox(height: 12),
+                      GestureDetector(
+                        onTap: onToggleSelect,
+                        child: Icon(
+                          stop.selected ? Icons.check_circle : Icons.radio_button_unchecked,
+                          color: stop.selected ? AppColors.blue : AppColors.textSecondary,
                         ),
+                      ),
                     ],
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    stop.address,
-                    style: textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 10),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 4,
-                    children: [
-                      _Badge(label: '${stop.pallets} ${strings.t('pallets')}'),
-                      _Badge(label: '${stop.weightLb} ${strings.t('lb')}'),
-                      _Badge(label: '${strings.t('eta_label')} ${stop.eta}'),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 12),
-            Column(
-              children: [
-                _DotMenu(onSelected: onActionSelected),
-                if (dragHandle != null) ...[
-                  const SizedBox(height: 16),
-                  dragHandle!,
-                ],
-                if (onToggleSelect != null) ...[
-                  const SizedBox(height: 12),
-                  GestureDetector(
-                    onTap: onToggleSelect,
-                    child: Icon(
-                      stop.selected ? Icons.check_circle : Icons.radio_button_unchecked,
-                      color: stop.selected ? AppColors.blue : AppColors.textSecondary,
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ],
             ),
-          ],
+          ),
         ),
       ),
     );

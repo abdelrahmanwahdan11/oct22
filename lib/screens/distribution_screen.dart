@@ -7,11 +7,13 @@ import '../core/navigation.dart';
 import '../l10n/app_localizations.dart';
 import '../models/models.dart';
 import '../widgets/animated_entry.dart';
+import '../widgets/assign_compartment_sheet.dart';
 import '../widgets/compartment_card.dart';
 import '../widgets/decorated_scaffold.dart';
 import '../widgets/stop_tile.dart';
 import '../widgets/top_tabs.dart';
 import '../widgets/toolbar_bottom.dart';
+import 'stop_detail_screen.dart' show StopDetailArgs;
 
 class DistributionScreen extends StatelessWidget {
   const DistributionScreen({
@@ -41,6 +43,9 @@ class DistributionScreen extends StatelessWidget {
         builder: (context, _) {
           final compartments = vehicleController.compartments;
           final stops = routeController.stops;
+          final compartmentLabels = {
+            for (final compartment in compartments) compartment.id: compartment.label,
+          };
           return LayoutBuilder(
             builder: (context, constraints) {
               final isWide = constraints.maxWidth > 900;
@@ -108,7 +113,13 @@ class DistributionScreen extends StatelessWidget {
                       ],
                     ),
                   ),
-                  _BottomStopsSheet(stops: stops, controller: routeController),
+                  _BottomStopsSheet(
+                    stops: stops,
+                    controller: routeController,
+                    compartmentLabels: compartmentLabels,
+                    onAssign: (stop) => _openAssignSheet(context, stop),
+                    onShowDetails: (stop) => _openStopDetails(context, stop),
+                  ),
                 ],
               );
             },
@@ -133,13 +144,59 @@ class DistributionScreen extends StatelessWidget {
         break;
     }
   }
+
+  Future<void> _openAssignSheet(BuildContext context, Stop stop) async {
+    final strings = AppLocalizations.of(context);
+    final selection = await showAssignCompartmentSheet(
+      context: context,
+      compartments: vehicleController.compartments,
+      stop: stop,
+    );
+    if (selection == null) {
+      return;
+    }
+    if (selection == removeAssignmentValue) {
+      routeController.removeStopAssignment(stop.id);
+      _showSnack(context, strings.t('assignment_cleared'));
+    } else {
+      routeController.assignStopToCompartment(stop.id, selection);
+      _showSnack(context, strings.t('assignment_updated'));
+    }
+  }
+
+  void _openStopDetails(BuildContext context, Stop stop) {
+    Navigator.of(context).pushNamed(
+      AppNavigation.routes['stop.detail']!,
+      arguments: StopDetailArgs(stopId: stop.id, fromSuggestions: false),
+    );
+  }
+
+  void _showSnack(BuildContext context, String message) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(message),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+  }
 }
 
 class _BottomStopsSheet extends StatelessWidget {
-  const _BottomStopsSheet({required this.stops, required this.controller});
+  const _BottomStopsSheet({
+    required this.stops,
+    required this.controller,
+    required this.compartmentLabels,
+    required this.onAssign,
+    required this.onShowDetails,
+  });
 
   final List<Stop> stops;
   final RouteController controller;
+  final Map<String, String> compartmentLabels;
+  final ValueChanged<Stop> onAssign;
+  final ValueChanged<Stop> onShowDetails;
 
   @override
   Widget build(BuildContext context) {
@@ -194,16 +251,27 @@ class _BottomStopsSheet extends StatelessWidget {
                           color: Colors.transparent,
                           child: SizedBox(
                             width: MediaQuery.of(context).size.width - 80,
-                            child: StopTile(stop: stop),
+                            child: StopTile(
+                              stop: stop,
+                              assignedLabel: compartmentLabels[stop.lockedToCompartmentId],
+                              showAssignButton: false,
+                            ),
                           ),
                         ),
                         childWhenDragging: Opacity(
                           opacity: 0.4,
-                          child: StopTile(stop: stop),
+                          child: StopTile(
+                            stop: stop,
+                            assignedLabel: compartmentLabels[stop.lockedToCompartmentId],
+                            showAssignButton: false,
+                          ),
                         ),
                         child: StopTile(
                           stop: stop,
+                          assignedLabel: compartmentLabels[stop.lockedToCompartmentId],
                           onToggleSelect: () => controller.toggleStopSelection(stop.id),
+                          onAssign: () => onAssign(stop),
+                          onTap: () => onShowDetails(stop),
                         ),
                       ),
                     );
