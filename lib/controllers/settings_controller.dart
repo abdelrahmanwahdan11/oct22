@@ -1,33 +1,51 @@
 import 'package:flutter/material.dart';
-import 'package:smart_home_control/core/app_localizations.dart';
-import 'package:smart_home_control/repositories/settings_repository.dart';
+
+import '../repositories/settings_repository.dart';
 
 class SettingsController extends ChangeNotifier {
-  SettingsController(this._settingsRepository, this.localization);
+  SettingsController(this._repository);
 
-  final SettingsRepository _settingsRepository;
-  final AppLocalizations localization;
+  final SettingsRepository _repository;
 
-  ThemeMode _themeMode = ThemeMode.system;
+  ThemeSetting _theme = ThemeSetting.light;
+  Locale _locale = const Locale('en');
+  UnitSystem _unitSystem = UnitSystem.imperial;
   bool _loaded = false;
 
-  ThemeMode get themeMode => _themeMode;
+  ThemeSetting get theme => _theme;
+  Locale get locale => _locale;
+  UnitSystem get unitSystem => _unitSystem;
   bool get isLoaded => _loaded;
 
+  ThemeMode get themeMode =>
+      _theme == ThemeSetting.dark ? ThemeMode.dark : ThemeMode.light;
+
+  bool get isDark => _theme == ThemeSetting.dark;
+
   Future<void> load() async {
-    _themeMode = await _settingsRepository.loadThemeMode();
+    final data = await _repository.load();
+    _theme = data.theme;
+    _locale = data.locale;
+    _unitSystem = data.unitSystem;
     _loaded = true;
     notifyListeners();
   }
 
-  Future<void> updateThemeMode(ThemeMode mode) async {
-    _themeMode = mode;
-    await _settingsRepository.saveThemeMode(mode);
+  Future<void> toggleDarkMode(bool value) async {
+    _theme = value ? ThemeSetting.dark : ThemeSetting.light;
+    await _repository.saveTheme(_theme);
     notifyListeners();
   }
 
-  Future<void> changeLocale(Locale locale) async {
-    await localization.changeLocale(locale);
+  Future<void> setLocale(Locale locale) async {
+    _locale = locale;
+    await _repository.saveLocale(locale);
+    notifyListeners();
+  }
+
+  Future<void> setUnitSystem(UnitSystem system) async {
+    _unitSystem = system;
+    await _repository.saveUnitSystem(system);
     notifyListeners();
   }
 }
