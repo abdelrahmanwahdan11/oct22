@@ -1,94 +1,160 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:smart_home_control/controllers/access_controller.dart';
-import 'package:smart_home_control/controllers/devices_controller.dart';
-import 'package:smart_home_control/controllers/energy_controller.dart';
-import 'package:smart_home_control/controllers/rooms_controller.dart';
-import 'package:smart_home_control/controllers/settings_controller.dart';
-import 'package:smart_home_control/core/app_localizations.dart';
-import 'package:smart_home_control/core/app_router.dart';
-import 'package:smart_home_control/core/app_theme.dart';
-import 'package:smart_home_control/core/controller_provider.dart';
-import 'package:smart_home_control/screens/home/home_shell.dart';
 
-class SmartHomeApp extends StatefulWidget {
-  const SmartHomeApp({
+import 'controllers/auth_controller.dart';
+import 'controllers/route_controller.dart';
+import 'controllers/settings_controller.dart';
+import 'controllers/vehicle_controller.dart';
+import 'core/app_scope.dart';
+import 'core/app_theme.dart';
+import 'core/navigation.dart';
+import 'l10n/app_localizations.dart';
+import 'screens/auth/login_screen.dart';
+import 'screens/auth/register_screen.dart';
+import 'screens/distribution_screen.dart';
+import 'screens/map_optimization_screen.dart';
+import 'screens/planning_screen.dart';
+import 'screens/settings_screen.dart';
+import 'screens/statistics_screen.dart';
+import 'screens/onboarding_screen.dart';
+import 'screens/timeline_cockpit_screen.dart';
+
+class FleetPlannerApp extends StatelessWidget {
+  const FleetPlannerApp({
     super.key,
-    required this.roomsController,
-    required this.devicesController,
-    required this.energyController,
-    required this.accessController,
+    required this.routeController,
+    required this.vehicleController,
     required this.settingsController,
-    required this.localization,
+    required this.authController,
   });
 
-  final RoomsController roomsController;
-  final DevicesController devicesController;
-  final EnergyController energyController;
-  final AccessController accessController;
+  final RouteController routeController;
+  final VehicleController vehicleController;
   final SettingsController settingsController;
-  final AppLocalizations localization;
-
-  @override
-  State<SmartHomeApp> createState() => _SmartHomeAppState();
-}
-
-class _SmartHomeAppState extends State<SmartHomeApp> {
-  late final Listenable _listenable;
-
-  @override
-  void initState() {
-    super.initState();
-    _listenable = Listenable.merge([
-      widget.settingsController,
-      widget.localization,
-    ]);
-  }
+  final AuthController authController;
 
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
-      animation: _listenable,
+      animation: Listenable.merge([settingsController, authController]),
       builder: (context, _) {
-        final locale = widget.localization.locale;
-        return ControllerScope(
-          rooms: widget.roomsController,
-          devices: widget.devicesController,
-          energy: widget.energyController,
-          access: widget.accessController,
-          settings: widget.settingsController,
+        final initialRoute = _resolveInitialRoute();
+        return AppScope(
+          routeController: routeController,
+          vehicleController: vehicleController,
+          settingsController: settingsController,
+          authController: authController,
           child: MaterialApp(
-            title: 'Smart Home Control',
             debugShowCheckedModeBanner: false,
-            theme: buildAppTheme(Brightness.light),
-            darkTheme: buildAppTheme(Brightness.dark),
-            themeMode: widget.settingsController.themeMode,
-            locale: locale,
+            title: 'Fleet Planner',
+            theme: buildAppTheme(ThemeSetting.light),
+            darkTheme: buildAppTheme(ThemeSetting.dark),
+            themeMode: settingsController.themeMode,
+            locale: settingsController.locale,
             supportedLocales: AppLocalizations.supportedLocales,
             localizationsDelegates: const [
+              AppLocalizations.delegate,
               GlobalMaterialLocalizations.delegate,
               GlobalWidgetsLocalizations.delegate,
               GlobalCupertinoLocalizations.delegate,
             ],
+            scrollBehavior: const MaterialScrollBehavior().copyWith(
+              dragDevices: {
+                PointerDeviceKind.touch,
+                PointerDeviceKind.mouse,
+                PointerDeviceKind.stylus,
+                PointerDeviceKind.unknown,
+              },
+            ),
+            initialRoute: initialRoute,
+            onGenerateRoute: _onGenerateRoute,
             builder: (context, child) {
-              final mediaQuery = MediaQuery.of(context);
+              final localization = AppLocalizations.of(context);
+              final direction = localization.isRtl ? TextDirection.rtl : TextDirection.ltr;
               return Directionality(
-                textDirection: _directionFor(locale),
-                child: MediaQuery(
-                  data: mediaQuery.copyWith(textScaler: mediaQuery.textScaler),
-                  child: child ?? const SizedBox.shrink(),
-                ),
+                textDirection: direction,
+                child: child ?? const SizedBox.shrink(),
               );
             },
-            onGenerateRoute: AppRouter.onGenerateRoute,
-            home: const HomeShell(),
           ),
         );
       },
     );
   }
 
-  TextDirection _directionFor(Locale locale) {
-    return locale.languageCode == 'ar' ? TextDirection.rtl : TextDirection.ltr;
+  String _resolveInitialRoute() {
+    if (!authController.completedOnboarding) {
+      return AppNavigation.routes['onboarding']!;
+    }
+    if (!authController.isAuthenticated) {
+      return AppNavigation.routes['auth.login']!;
+    }
+    return AppNavigation.routes['planning']!;
+  }
+
+  Route<dynamic> _onGenerateRoute(RouteSettings settings) {
+    final name = settings.name;
+    Widget page;
+    switch (name) {
+      case '/onboarding':
+        page = OnboardingScreen(authController: authController);
+        break;
+      case '/auth/login':
+        page = LoginScreen(authController: authController);
+        break;
+      case '/auth/register':
+        page = RegisterScreen(authController: authController);
+        break;
+      case '/planning':
+        page = PlanningScreen(
+          routeController: routeController,
+          vehicleController: vehicleController,
+        );
+        break;
+      case '/distribution':
+        page = DistributionScreen(
+          routeController: routeController,
+          vehicleController: vehicleController,
+        );
+        break;
+      case '/statistics':
+        page = StatisticsScreen(
+          routeController: routeController,
+          vehicleController: vehicleController,
+        );
+        break;
+      case '/timeline.cockpit':
+        page = TimelineCockpitScreen(routeController: routeController);
+        break;
+      case '/map.optimization':
+        page = MapOptimizationScreen(routeController: routeController);
+        break;
+      case '/settings':
+        page = SettingsScreen(settingsController: settingsController);
+        break;
+      default:
+        page = PlanningScreen(
+          routeController: routeController,
+          vehicleController: vehicleController,
+        );
+        break;
+    }
+    return PageRouteBuilder(
+      settings: settings,
+      transitionDuration: const Duration(milliseconds: 260),
+      pageBuilder: (context, animation, secondaryAnimation) => page,
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        final offsetAnimation = Tween<Offset>(
+          begin: const Offset(0.08, 0.02),
+          end: Offset.zero,
+        ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOut));
+        final fadeAnimation = CurvedAnimation(parent: animation, curve: Curves.easeInOut);
+        return FadeTransition(
+          opacity: fadeAnimation,
+          child: SlideTransition(position: offsetAnimation, child: child),
+        );
+      },
+    );
   }
 }
