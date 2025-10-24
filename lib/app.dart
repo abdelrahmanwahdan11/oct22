@@ -1,124 +1,94 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
-import 'controllers/route_controller.dart';
+import 'controllers/auth_controller.dart';
+import 'controllers/favorites_controller.dart';
+import 'controllers/filters_controller.dart';
+import 'controllers/properties_controller.dart';
 import 'controllers/settings_controller.dart';
-import 'controllers/vehicle_controller.dart';
-import 'core/app_scope.dart';
-import 'core/app_theme.dart';
-import 'core/navigation.dart';
-import 'l10n/app_localizations.dart';
-import 'screens/distribution_screen.dart';
-import 'screens/map_optimization_screen.dart';
-import 'screens/planning_screen.dart';
-import 'screens/settings_screen.dart';
-import 'screens/statistics_screen.dart';
-import 'screens/timeline_cockpit_screen.dart';
+import 'core/localization/app_localizations.dart';
+import 'core/providers/notifier_provider.dart';
+import 'core/routing/app_router.dart';
+import 'core/theme/app_theme.dart';
+import 'data/repositories/agents_repository.dart';
 
-class FleetPlannerApp extends StatelessWidget {
-  const FleetPlannerApp({
+class RealEstateApp extends StatefulWidget {
+  const RealEstateApp({
     super.key,
-    required this.routeController,
-    required this.vehicleController,
     required this.settingsController,
+    required this.authController,
+    required this.favoritesController,
+    required this.filtersController,
+    required this.propertiesController,
+    required this.agentsRepository,
   });
 
-  final RouteController routeController;
-  final VehicleController vehicleController;
   final SettingsController settingsController;
+  final AuthController authController;
+  final FavoritesController favoritesController;
+  final FiltersController filtersController;
+  final PropertiesController propertiesController;
+  final AgentsRepository agentsRepository;
+
+  @override
+  State<RealEstateApp> createState() => _RealEstateAppState();
+}
+
+class _RealEstateAppState extends State<RealEstateApp> {
+  late final AppRouter _router;
+
+  @override
+  void initState() {
+    super.initState();
+    _router = AppRouter(agentsRepository: widget.agentsRepository);
+  }
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: settingsController,
-      builder: (context, _) {
-        return AppScope(
-          routeController: routeController,
-          vehicleController: vehicleController,
-          settingsController: settingsController,
-          child: MaterialApp(
-            debugShowCheckedModeBanner: false,
-            title: 'Fleet Planner',
-            theme: buildAppTheme(ThemeSetting.light),
-            darkTheme: buildAppTheme(ThemeSetting.dark),
-            themeMode: settingsController.themeMode,
-            locale: settingsController.locale,
-            supportedLocales: AppLocalizations.supportedLocales,
-            localizationsDelegates: const [
-              AppLocalizations.delegate,
-              GlobalMaterialLocalizations.delegate,
-              GlobalWidgetsLocalizations.delegate,
-              GlobalCupertinoLocalizations.delegate,
-            ],
-            initialRoute: AppNavigation.routes['planning'],
-            onGenerateRoute: _onGenerateRoute,
-            builder: (context, child) {
-              final localization = AppLocalizations.of(context);
-              final direction = localization.isRtl ? TextDirection.rtl : TextDirection.ltr;
-              return Directionality(
-                textDirection: direction,
-                child: child ?? const SizedBox.shrink(),
-              );
-            },
+    return NotifierProvider<SettingsController>(
+      notifier: widget.settingsController,
+      child: NotifierProvider<AuthController>(
+        notifier: widget.authController,
+        child: NotifierProvider<FavoritesController>(
+          notifier: widget.favoritesController,
+          child: NotifierProvider<FiltersController>(
+            notifier: widget.filtersController,
+            child: NotifierProvider<PropertiesController>(
+              notifier: widget.propertiesController,
+              child: Builder(builder: (context) {
+                final settings = NotifierProvider.of<SettingsController>(context);
+                return MaterialApp( 
+                  debugShowCheckedModeBanner: false,
+                  title: 'RealEstate+',
+                  theme: AppTheme.light(),
+                  darkTheme: AppTheme.dark(),
+                  themeMode: settings.themeMode,
+                  locale: settings.locale,
+                  supportedLocales: AppLocalizations.supportedLocales,
+                  localizationsDelegates: const [
+                    AppLocalizationsDelegate(),
+                    GlobalMaterialLocalizations.delegate,
+                    GlobalWidgetsLocalizations.delegate,
+                    GlobalCupertinoLocalizations.delegate,
+                  ],
+                  localeResolutionCallback: (locale, supported) {
+                    if (locale == null) return AppLocalizations.defaultLocale;
+                    for (final supportedLocale in supported) {
+                      if (supportedLocale.languageCode == locale.languageCode) {
+                        return supportedLocale;
+                      }
+                    }
+                    return AppLocalizations.defaultLocale;
+                  },
+                  initialRoute:
+                      settings.onboardingComplete ? 'auth.login' : 'onboarding',
+                  onGenerateRoute: _router.onGenerateRoute,
+                );
+              }),
+            ),
           ),
-        );
-      },
-    );
-  }
-
-  Route<dynamic> _onGenerateRoute(RouteSettings settings) {
-    final name = settings.name;
-    Widget page;
-    switch (name) {
-      case '/planning':
-        page = PlanningScreen(
-          routeController: routeController,
-          vehicleController: vehicleController,
-        );
-        break;
-      case '/distribution':
-        page = DistributionScreen(
-          routeController: routeController,
-          vehicleController: vehicleController,
-        );
-        break;
-      case '/statistics':
-        page = StatisticsScreen(
-          routeController: routeController,
-          vehicleController: vehicleController,
-        );
-        break;
-      case '/timeline.cockpit':
-        page = TimelineCockpitScreen(routeController: routeController);
-        break;
-      case '/map.optimization':
-        page = MapOptimizationScreen(routeController: routeController);
-        break;
-      case '/settings':
-        page = SettingsScreen(settingsController: settingsController);
-        break;
-      default:
-        page = PlanningScreen(
-          routeController: routeController,
-          vehicleController: vehicleController,
-        );
-        break;
-    }
-    return PageRouteBuilder(
-      settings: settings,
-      transitionDuration: const Duration(milliseconds: 260),
-      pageBuilder: (context, animation, secondaryAnimation) => page,
-      transitionsBuilder: (context, animation, secondaryAnimation, child) {
-        final offsetAnimation = Tween<Offset>(
-          begin: const Offset(0.08, 0.02),
-          end: Offset.zero,
-        ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOut));
-        final fadeAnimation = CurvedAnimation(parent: animation, curve: Curves.easeInOut);
-        return FadeTransition(
-          opacity: fadeAnimation,
-          child: SlideTransition(position: offsetAnimation, child: child),
-        );
-      },
+        ),
+      ),
     );
   }
 }

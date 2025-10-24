@@ -12,6 +12,8 @@ dependencies:
     sdk: flutter
   google_fonts: ^6.2.1
   shared_preferences: ^2.2.3
+  font_awesome_flutter: ^10.7.0
+  flutter_animate: ^4.5.0
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -20,3 +22,4 @@ flutter:
   uses-material-design: true
   assets:
     - assets/images/
+    - assets/l10n/

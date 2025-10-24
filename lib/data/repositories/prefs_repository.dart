@@ -1,0 +1,149 @@
+import 'dart:convert';
+
+import 'package:shared_preferences/shared_preferences.dart';
+
+class PrefsRepository {
+  static const _themeKey = 'theme';
+  static const _localeKey = 'locale';
+  static const _favoritesKey = 'favorites';
+  static const _savedFilterKey = 'saved_filter';
+  static const _onboardingKey = 'onboarding_done';
+  static const _rememberMeKey = 'remember_me';
+  static const _rememberedEmailKey = 'remembered_email';
+  static const _recentSearchesKey = 'recent_searches';
+  static const _recentViewsKey = 'recent_views';
+  static const _submittedPropertiesKey = 'submitted_properties';
+
+  SharedPreferences? _prefs;
+
+  Future<void> init() async {
+    _prefs ??= await SharedPreferences.getInstance();
+  }
+
+  Future<String?> loadThemeMode() async {
+    await init();
+    return _prefs!.getString(_themeKey);
+  }
+
+  Future<void> saveThemeMode(String mode) async {
+    await init();
+    await _prefs!.setString(_themeKey, mode);
+  }
+
+  Future<String?> loadLocale() async {
+    await init();
+    return _prefs!.getString(_localeKey);
+  }
+
+  Future<void> saveLocale(String locale) async {
+    await init();
+    await _prefs!.setString(_localeKey, locale);
+  }
+
+  Future<Set<String>> loadFavorites() async {
+    await init();
+    final list = _prefs!.getStringList(_favoritesKey) ?? <String>[];
+    return list.toSet();
+  }
+
+  Future<void> saveFavorites(Set<String> ids) async {
+    await init();
+    await _prefs!.setStringList(_favoritesKey, ids.toList());
+  }
+
+  Future<Map<String, dynamic>?> loadSavedFilter() async {
+    await init();
+    final jsonString = _prefs!.getString(_savedFilterKey);
+    if (jsonString == null) return null;
+    return json.decode(jsonString) as Map<String, dynamic>;
+  }
+
+  Future<void> saveFilter(Map<String, dynamic> value) async {
+    await init();
+    await _prefs!.setString(_savedFilterKey, json.encode(value));
+  }
+
+  Future<bool> loadRememberMe() async {
+    await init();
+    return _prefs!.getBool(_rememberMeKey) ?? false;
+  }
+
+  Future<void> saveRememberMe(bool value) async {
+    await init();
+    await _prefs!.setBool(_rememberMeKey, value);
+  }
+
+  Future<String?> loadRememberedEmail() async {
+    await init();
+    return _prefs!.getString(_rememberedEmailKey);
+  }
+
+  Future<void> saveRememberedEmail(String? value) async {
+    await init();
+    if (value == null || value.isEmpty) {
+      await _prefs!.remove(_rememberedEmailKey);
+      return;
+    }
+    await _prefs!.setString(_rememberedEmailKey, value);
+  }
+
+  Future<List<String>> loadRecentSearches() async {
+    await init();
+    return _prefs!.getStringList(_recentSearchesKey) ?? <String>[];
+  }
+
+  Future<void> addRecentSearch(String value) async {
+    if (value.isEmpty) return;
+    await init();
+    final current = _prefs!.getStringList(_recentSearchesKey) ?? <String>[];
+    current.remove(value);
+    current.insert(0, value);
+    final limited = current.take(10).toList();
+    await _prefs!.setStringList(_recentSearchesKey, limited);
+  }
+
+  Future<List<String>> loadRecentViews() async {
+    await init();
+    return _prefs!.getStringList(_recentViewsKey) ?? <String>[];
+  }
+
+  Future<void> addRecentView(String id) async {
+    await init();
+    final current = _prefs!.getStringList(_recentViewsKey) ?? <String>[];
+    current.remove(id);
+    current.insert(0, id);
+    final limited = current.take(12).toList();
+    await _prefs!.setStringList(_recentViewsKey, limited);
+  }
+
+  Future<List<Map<String, dynamic>>> loadSubmittedProperties() async {
+    await init();
+    final raw = _prefs!.getStringList(_submittedPropertiesKey) ?? <String>[];
+    return raw
+        .map((item) => json.decode(item) as Map<String, dynamic>)
+        .toList();
+  }
+
+  Future<void> addSubmittedProperty(Map<String, dynamic> jsonMap) async {
+    await init();
+    final raw = _prefs!.getStringList(_submittedPropertiesKey) ?? <String>[];
+    raw.insert(0, json.encode(jsonMap));
+    final limited = raw.take(25).toList();
+    await _prefs!.setStringList(_submittedPropertiesKey, limited);
+  }
+
+  Future<void> clear() async {
+    await init();
+    await _prefs!.clear();
+  }
+
+  Future<bool> isOnboardingDone() async {
+    await init();
+    return _prefs!.getBool(_onboardingKey) ?? false;
+  }
+
+  Future<void> setOnboardingDone() async {
+    await init();
+    await _prefs!.setBool(_onboardingKey, true);
+  }
+}
