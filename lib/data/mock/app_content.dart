@@ -31,6 +31,249 @@ class AppContent {
     },
   ];
 
+  static const homeFeatureHighlights = [
+    {
+      'icon': 'chart-simple',
+      'title': {'en': 'Smart valuation', 'ar': 'تقييم ذكي'},
+      'body': {
+        'en': 'AI-powered pricing refreshes every 24 hours.',
+        'ar': 'تسعير مدعوم بالذكاء الاصطناعي يتجدّد كل 24 ساعة.',
+      },
+    },
+    {
+      'icon': 'earth-europe',
+      'title': {'en': 'Neighborhood mood', 'ar': 'مزاج الحي'},
+      'body': {
+        'en': 'Live sentiment snapshots from residents and visitors.',
+        'ar': 'انطباعات مباشرة من السكان والزوار.',
+      },
+    },
+    {
+      'icon': 'leaf',
+      'title': {'en': 'Carbon smart score', 'ar': 'مؤشر الكربون الذكي'},
+      'body': {
+        'en': 'Compare environmental impact before you visit.',
+        'ar': 'قارن الأثر البيئي قبل الزيارة.',
+      },
+    },
+    {
+      'icon': 'school',
+      'title': {'en': 'School rankings', 'ar': 'ترتيب المدارس'},
+      'body': {
+        'en': 'Filter by curricula, commute, and excellence score.',
+        'ar': 'تصفية حسب المناهج والتنقل ومؤشر التميز.',
+      },
+    },
+    {
+      'icon': 'paw',
+      'title': {'en': 'Pet-friendly checker', 'ar': 'مدقق ملائم للحيوانات'},
+      'body': {
+        'en': 'Policies, deposits, and nearby parks in one view.',
+        'ar': 'السياسات والودائع والحدائق القريبة في عرض واحد.',
+      },
+    },
+    {
+      'icon': 'clipboard-check',
+      'title': {'en': 'Move-in checklist', 'ar': 'قائمة الانتقال'},
+      'body': {
+        'en': 'Step-by-step onboarding tailored to each property.',
+        'ar': 'مهام متسلسلة مخصصة لكل عقار.',
+      },
+    },
+    {
+      'icon': 'handshake-simple',
+      'title': {'en': 'Flexible contracts', 'ar': 'عقود مرنة'},
+      'body': {
+        'en': 'Review rental terms with month-to-month options.',
+        'ar': 'اطلع على شروط الإيجار مع خيارات شهر بشهر.',
+      },
+    },
+    {
+      'icon': 'sun',
+      'title': {'en': 'Solar savings', 'ar': 'توفير شمسي'},
+      'body': {
+        'en': 'Estimate panels, exposure, and incentive programs.',
+        'ar': 'احسب الألواح والتعرّض وبرامج الحوافز.',
+      },
+    },
+    {
+      'icon': 'couch',
+      'title': {'en': 'Furnished bundles', 'ar': 'باقات التأثيث'},
+      'body': {
+        'en': 'Ready-made furniture packs with delivery slots.',
+        'ar': 'باقات أثاث جاهزة مع مواعيد تسليم محددة.',
+      },
+    },
+    {
+      'icon': 'calendar-days',
+      'title': {'en': 'Community calendar', 'ar': 'تقويم المجتمع'},
+      'body': {
+        'en': 'Weekly events curated around the neighborhood.',
+        'ar': 'فعاليات أسبوعية مختارة حول الحي.',
+      },
+    },
+    {
+      'icon': 'palette',
+      'title': {'en': 'Designer match', 'ar': 'مطابقة مصمم'},
+      'body': {
+        'en': 'Pair with interior experts that share your style.',
+        'ar': 'تواصل مع خبراء تصميم يشاركونك الأسلوب.',
+      },
+    },
+    {
+      'icon': 'scale-balanced',
+      'title': {'en': 'Legal ready', 'ar': 'جاهزية قانونية'},
+      'body': {
+        'en': 'Pre-reviewed documents and compliance reminders.',
+        'ar': 'مستندات مراجعة مسبقاً مع تنبيهات امتثال.',
+      },
+    },
+    {
+      'icon': 'hand-holding-dollar',
+      'title': {'en': 'Mortgage concierge', 'ar': 'مستشار الرهن'},
+      'body': {
+        'en': 'Simulate rates and lock pre-approvals quickly.',
+        'ar': 'حاكي الأسعار وثبّت الموافقات المبدئية بسرعة.',
+      },
+    },
+    {
+      'icon': 'circle-play',
+      'title': {'en': 'Live 4K tours', 'ar': 'جولات 4K مباشرة'},
+      'body': {
+        'en': 'Book immersive streaming tours in seconds.',
+        'ar': 'احجز جولات بث غامرة خلال ثوانٍ.',
+      },
+    },
+    {
+      'icon': 'wifi',
+      'title': {'en': 'Connectivity audit', 'ar': 'تدقيق الاتصال'},
+      'body': {
+        'en': 'Speed tests and provider coverage per room.',
+        'ar': 'اختبارات السرعة وتغطية المزود لكل غرفة.',
+      },
+    },
+    {
+      'icon': 'bell',
+      'title': {'en': 'Smart alerts', 'ar': 'تنبيهات ذكية'},
+      'body': {
+        'en': 'Personalized price, status, and visit reminders.',
+        'ar': 'تنبيهات سعر وحالة وزيارات مخصصة لك.',
+      },
+    },
+    {
+      'icon': 'people-roof',
+      'title': {'en': 'Co-ownership planner', 'ar': 'مخطط الملكية المشتركة'},
+      'body': {
+        'en': 'Share costs, equity, and schedules transparently.',
+        'ar': 'قسّم التكاليف والملكية والجداول بشفافية.',
+      },
+    },
+    {
+      'icon': 'house-signal',
+      'title': {'en': 'Smart home profile', 'ar': 'ملف المنزل الذكي'},
+      'body': {
+        'en': 'See installed devices and automation health.',
+        'ar': 'اطلع على الأجهزة المثبتة وصحة الأتمتة.',
+      },
+    },
+    {
+      'icon': 'spa',
+      'title': {'en': 'Wellness amenities', 'ar': 'مرافق العافية'},
+      'body': {
+        'en': 'Find gyms, spas, and mindfulness zones nearby.',
+        'ar': 'اعثر على النوادي والسبا ومساحات التأمل القريبة.',
+      },
+    },
+    {
+      'icon': 'house-laptop',
+      'title': {'en': 'Remote work score', 'ar': 'درجة العمل عن بعد'},
+      'body': {
+        'en': 'Evaluate workspace, lighting, and acoustics instantly.',
+        'ar': 'قيّم مساحة العمل والإضاءة والصوت فوراً.',
+      },
+    },
+    {
+      'icon': 'ear-listen',
+      'title': {'en': 'Acoustic comfort', 'ar': 'راحة صوتية'},
+      'body': {
+        'en': 'Noise index built from ambient readings.',
+        'ar': 'مؤشر ضوضاء مبني على قراءات محيطية.',
+      },
+    },
+    {
+      'icon': 'square-parking',
+      'title': {'en': 'Parking assurance', 'ar': 'ضمان المواقف'},
+      'body': {
+        'en': 'Reserved spots, EV chargers, and policies outlined.',
+        'ar': 'مواقف محجوزة، شواحن كهربائية، وسياسات واضحة.',
+      },
+    },
+    {
+      'icon': 'boxes-stacked',
+      'title': {'en': 'Storage add-ons', 'ar': 'إضافات التخزين'},
+      'body': {
+        'en': 'Secure lockers and basement units availability.',
+        'ar': 'خزائن آمنة ووحدات قبو متاحة.',
+      },
+    },
+    {
+      'icon': 'shield-heart',
+      'title': {'en': 'Insurance estimate', 'ar': 'تقدير التأمين'},
+      'body': {
+        'en': 'Instant quotes tailored to the address.',
+        'ar': 'عروض أسعار فورية مخصّصة للموقع.',
+      },
+    },
+    {
+      'icon': 'file-invoice',
+      'title': {'en': 'Maintenance log', 'ar': 'سجل الصيانة'},
+      'body': {
+        'en': 'Review repair history and warranty coverage.',
+        'ar': 'استعرض تاريخ الإصلاحات وتغطية الضمان.',
+      },
+    },
+    {
+      'icon': 'shield-halved',
+      'title': {'en': 'Neighborhood watch', 'ar': 'مراقبة الحي'},
+      'body': {
+        'en': 'Safety programs, response times, and reports.',
+        'ar': 'برامج الأمان وأوقات الاستجابة والتقارير.',
+      },
+    },
+    {
+      'icon': 'water',
+      'title': {'en': 'Flood risk scan', 'ar': 'فحص مخاطر الفيضانات'},
+      'body': {
+        'en': 'Hydrology data and mitigation guidelines.',
+        'ar': 'بيانات هيدرولوجية وإرشادات التخفيف.',
+      },
+    },
+    {
+      'icon': 'chart-line',
+      'title': {'en': 'Price history', 'ar': 'تاريخ الأسعار'},
+      'body': {
+        'en': 'Compare listing momentum over five years.',
+        'ar': 'قارن زخم القوائم خلال خمس سنوات.',
+      },
+    },
+    {
+      'icon': 'list-check',
+      'title': {'en': 'Custom payment plan', 'ar': 'خطة دفعات مخصصة'},
+      'body': {
+        'en': 'Build phased schedules with reminders built in.',
+        'ar': 'أنشئ جداول دفعات مرحلية مع تذكيرات مدمجة.',
+      },
+    },
+    {
+      'icon': 'user-shield',
+      'title': {'en': 'Verified agent badge', 'ar': 'شهادة وكيل موثوق'},
+      'body': {
+        'en': 'Proof-of-service, reviews, and credentials surfaced.',
+        'ar': 'عرض إثبات الخدمة والتقييمات والاعتمادات.',
+      },
+    },
+  ];
+
   static const virtualTours = [
     {
       'title': 'Skyline Penthouse Tour',

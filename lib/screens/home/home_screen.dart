@@ -162,6 +162,68 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               SliverToBoxAdapter(
                 child: Padding(
+                  padding: EdgeInsets.fromLTRB(horizontalPadding, 4, horizontalPadding, 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        strings.t('home_feature_highlights'),
+                        style: Theme.of(context)
+                            .textTheme
+                            .titleLarge
+                            ?.copyWith(fontWeight: FontWeight.w700),
+                      ).fadeMove(),
+                      const SizedBox(height: 4),
+                      Text(
+                        strings.t('home_feature_caption'),
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              color: Theme.of(context)
+                                  .textTheme
+                                  .bodyMedium
+                                  ?.color
+                                  ?.withOpacity(0.7),
+                            ),
+                      ).fadeMove(delay: 40),
+                      const SizedBox(height: 16),
+                      LayoutBuilder(
+                        builder: (context, constraints) {
+                          final features = AppContent.homeFeatureHighlights;
+                          final maxWidth = constraints.maxWidth;
+                          final double tileWidth;
+                          if (maxWidth >= 1100) {
+                            tileWidth = (maxWidth - 48) / 3;
+                          } else if (maxWidth >= 700) {
+                            tileWidth = (maxWidth - 32) / 2;
+                          } else {
+                            tileWidth = maxWidth;
+                          }
+                          return Wrap(
+                            spacing: 16,
+                            runSpacing: 16,
+                            children: [
+                              for (final feature in features)
+                                SizedBox(
+                                  width: tileWidth,
+                                  child: _FeatureHighlightTile(
+                                    icon: AppIcons.map[feature['icon']] ??
+                                        FontAwesomeIcons.wandMagicSparkles,
+                                    title: AppContent.localizedText(
+                                        (feature['title'] as Map<String, String>), languageCode),
+                                    body: AppContent.localizedText(
+                                        (feature['body'] as Map<String, String>), languageCode),
+                                    dark: settings.isDarkMode,
+                                  ),
+                                ),
+                            ],
+                          ).fadeMove(delay: 60);
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              SliverToBoxAdapter(
+                child: Padding(
                   padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
                   child: PillTabs(
                     onChanged: (index) {
@@ -964,6 +1026,41 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: _SectionHeader(title: strings.t('suggested_list')),
                 ),
               ),
+              if (!properties.loading && properties.feed.isEmpty)
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.fromLTRB(horizontalPadding, 0, horizontalPadding, 24),
+                    child: Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: AppDecorations.glassCard(dark: settings.isDarkMode),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            strings.t('home_empty_title'),
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleMedium
+                                ?.copyWith(fontWeight: FontWeight.w600),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            strings.t('home_empty_body'),
+                            style: Theme.of(context).textTheme.bodyMedium,
+                          ),
+                          const SizedBox(height: 16),
+                          FilledButton.icon(
+                            onPressed: () {
+                              properties.clearLifestyle();
+                            },
+                            icon: const FaIcon(FontAwesomeIcons.rotateLeft, size: 16),
+                            label: Text(strings.t('home_empty_reset')),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
               if (properties.loading)
                 const SliverToBoxAdapter(
                   child: Padding(
@@ -1078,6 +1175,96 @@ class _TravelTimePill extends StatelessWidget {
   }
 }
 
+class _FeatureHighlightTile extends StatelessWidget {
+  const _FeatureHighlightTile({
+    required this.icon,
+    required this.title,
+    required this.body,
+    required this.dark,
+  });
+
+  final IconData icon;
+  final String title;
+  final String body;
+  final bool dark;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final surface = dark
+        ? const Color(0xFF1E2127).withOpacity(0.88)
+        : theme.colorScheme.surface;
+    final borderColor = theme.dividerColor.withOpacity(dark ? 0.25 : 0.18);
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(20),
+        onTap: () {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(body),
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        },
+        child: Ink(
+          decoration: BoxDecoration(
+            color: surface,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: borderColor),
+            boxShadow: const [
+              BoxShadow(
+                color: Color.fromRGBO(16, 24, 40, 0.05),
+                blurRadius: 20,
+                offset: Offset(0, 14),
+              ),
+            ],
+          ),
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              FaIcon(icon, size: 18, color: theme.colorScheme.primary),
+              const SizedBox(height: 12),
+              Text(
+                title,
+                style:
+                    theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                body,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.textTheme.bodyMedium?.color?.withOpacity(0.75),
+                ),
+              ),
+              const SizedBox(height: 14),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    AppLocalizations.of(context).t('see_all'),
+                    style: theme.textTheme.labelLarge?.copyWith(
+                      color: theme.colorScheme.primary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  FaIcon(
+                    AppIcons.map['arrow-right-long'] ?? FontAwesomeIcons.arrowRightLong,
+                    size: 14,
+                    color: theme.colorScheme.primary,
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class AppIcons {
   static const Map<String, IconData> map = {
     'wand-magic-sparkles': FontAwesomeIcons.wandMagicSparkles,
@@ -1090,5 +1277,34 @@ class AppIcons {
     'file-lines': FontAwesomeIcons.fileLines,
     'file-shield': FontAwesomeIcons.fileShield,
     'book': FontAwesomeIcons.book,
+    'arrow-right-long': FontAwesomeIcons.arrowRightLong,
+    'rotate-left': FontAwesomeIcons.rotateLeft,
+    'chart-simple': FontAwesomeIcons.chartSimple,
+    'earth-europe': FontAwesomeIcons.earthEurope,
+    'leaf': FontAwesomeIcons.leaf,
+    'school': FontAwesomeIcons.school,
+    'paw': FontAwesomeIcons.paw,
+    'clipboard-check': FontAwesomeIcons.clipboardCheck,
+    'handshake-simple': FontAwesomeIcons.handshakeSimple,
+    'sun': FontAwesomeIcons.sun,
+    'couch': FontAwesomeIcons.couch,
+    'calendar-days': FontAwesomeIcons.calendarDays,
+    'palette': FontAwesomeIcons.palette,
+    'hand-holding-dollar': FontAwesomeIcons.handHoldingDollar,
+    'circle-play': FontAwesomeIcons.circlePlay,
+    'wifi': FontAwesomeIcons.wifi,
+    'bell': FontAwesomeIcons.bell,
+    'people-roof': FontAwesomeIcons.peopleRoof,
+    'spa': FontAwesomeIcons.spa,
+    'house-laptop': FontAwesomeIcons.houseLaptop,
+    'ear-listen': FontAwesomeIcons.earListen,
+    'square-parking': FontAwesomeIcons.squareParking,
+    'boxes-stacked': FontAwesomeIcons.boxesStacked,
+    'shield-heart': FontAwesomeIcons.shieldHeart,
+    'file-invoice': FontAwesomeIcons.fileInvoice,
+    'water': FontAwesomeIcons.water,
+    'chart-line': FontAwesomeIcons.chartLine,
+    'list-check': FontAwesomeIcons.listCheck,
+    'user-shield': FontAwesomeIcons.userShield,
   };
 }

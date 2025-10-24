@@ -231,12 +231,22 @@ class PropertiesController extends ChangeNotifier {
 
   Future<void> _loadFeatured() async {
     final items = await _propertiesRepository.fetchFeatured(filters: filters);
-    _featured = _mapFavorites(items);
+    final mapped = _mapFavorites(items);
+    if (mapped.isEmpty) {
+      _featured = _mapFavorites(_fallbackFeatured());
+    } else {
+      _featured = mapped;
+    }
   }
 
   Future<void> _loadExplore() async {
     final items = await _propertiesRepository.fetchExplore(filters: filters);
-    _explore = _mapFavorites(items);
+    final mapped = _mapFavorites(items);
+    if (mapped.isEmpty) {
+      _explore = _mapFavorites(_fallbackExplore());
+    } else {
+      _explore = mapped;
+    }
   }
 
   Future<void> _loadFeed({required bool reset}) async {
@@ -252,7 +262,13 @@ class PropertiesController extends ChangeNotifier {
     );
     final mapped = _mapFavorites(result.items);
     _feed = reset ? mapped : [..._feed, ...mapped];
-    _hasMore = result.hasMore;
+    if (_feed.isEmpty) {
+      final fallback = _mapFavorites(_fallbackFeed());
+      _feed = fallback;
+      _hasMore = fallback.length < _propertiesRepository.all().length;
+    } else {
+      _hasMore = result.hasMore;
+    }
   }
 
   List<Property> _mapFavorites(List<Property> items) {
@@ -313,6 +329,26 @@ class PropertiesController extends ChangeNotifier {
 
   Future<void> _loadCompare() async {
     _compareIds = await _prefsRepository.loadCompare();
+  }
+
+  List<Property> _fallbackFeatured() {
+    final featured = _propertiesRepository
+        .all()
+        .where((property) => property.isFeatured)
+        .take(6)
+        .toList();
+    if (featured.isNotEmpty) {
+      return featured;
+    }
+    return _propertiesRepository.all().take(6).toList();
+  }
+
+  List<Property> _fallbackExplore() {
+    return _propertiesRepository.all().take(20).toList();
+  }
+
+  List<Property> _fallbackFeed() {
+    return _propertiesRepository.all().take(12).toList();
   }
 
   @override
