@@ -115,6 +115,39 @@ class AppContent {
     },
   ];
 
+  static const marketHeadlines = [
+    {
+      'title': {
+        'en': 'Developers launch eco districts',
+        'ar': 'المطورون يطلقون أحياء صديقة للبيئة',
+      },
+      'body': {
+        'en': 'Three new smart neighborhoods debut with solar-ready rooftops and mobility hubs.',
+        'ar': 'ثلاثة أحياء ذكية جديدة تفتتح بأسطح جاهزة للطاقة الشمسية ومراكز تنقل متكاملة.',
+      },
+    },
+    {
+      'title': {
+        'en': 'Rental demand rises 12% downtown',
+        'ar': 'زيادة الطلب على الإيجار 12٪ في وسط المدينة',
+      },
+      'body': {
+        'en': 'Flexible leases and furnished lofts lead the surge for digital nomads.',
+        'ar': 'العقود المرنة والشقق المفروشة تقود الطلب المرتفع لدى الرحالة الرقميين.',
+      },
+    },
+    {
+      'title': {
+        'en': 'Waterfront villas post record listings',
+        'ar': 'فلل الواجهة البحرية تسجل أرقاماً قياسية',
+      },
+      'body': {
+        'en': 'Owners upgrade outdoor lounges and infinity pools to meet premium buyer checklists.',
+        'ar': 'المالكون يطوّرون الصالات الخارجية والمسابح اللانهائية لتلبية قوائم المشترين الفاخرة.',
+      },
+    },
+  ];
+
   static const investmentTips = [
     {
       'title': 'Track absorption rate',

@@ -2,15 +2,25 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
-  static ThemeData light() {
+  static const List<Color> accents = [
+    Color(0xFF111111),
+    Color(0xFF2563EB),
+    Color(0xFFDC2626),
+    Color(0xFF059669),
+    Color(0xFF9333EA),
+    Color(0xFF0EA5E9),
+  ];
+
+  static ThemeData light({Color? accent}) {
+    final Color accentColor = accent ?? accents.first;
     final base = ThemeData(useMaterial3: true);
     final textTheme = GoogleFonts.poppinsTextTheme(base.textTheme);
     final scheme = base.colorScheme.copyWith(
-      primary: const Color(0xFF111111),
-      onPrimary: Colors.white,
+      primary: accentColor,
+      onPrimary: accentColor.computeLuminance() > 0.5 ? Colors.black : Colors.white,
       primaryContainer: const Color(0xFFEDEDED),
-      secondary: const Color(0xFF111111),
-      onSecondary: Colors.white,
+      secondary: accentColor,
+      onSecondary: accentColor.computeLuminance() > 0.5 ? Colors.black : Colors.white,
       secondaryContainer: const Color(0xFFF1EFE9),
       tertiary: const Color(0xFF9B9286),
       background: const Color(0xFFF5F4F6),
@@ -117,10 +127,10 @@ class AppTheme {
         titleTextStyle: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
         contentTextStyle: textTheme.bodyMedium,
       ),
-      floatingActionButtonTheme: const FloatingActionButtonThemeData(
-        backgroundColor: Color(0xFF111111),
-        foregroundColor: Color(0xFFFFFFFF),
-        shape: StadiumBorder(),
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
+        backgroundColor: scheme.primary,
+        foregroundColor: scheme.onPrimary,
+        shape: const StadiumBorder(),
       ),
       bottomSheetTheme: BottomSheetThemeData(
         backgroundColor: scheme.surface,
@@ -163,15 +173,19 @@ class AppTheme {
     );
   }
 
-  static ThemeData dark() {
+  static ThemeData dark({Color? accent}) {
+    final Color accentColor = accent ?? accents.firstWhere(
+      (color) => color.computeLuminance() > 0.4,
+      orElse: () => accents.first,
+    );
     final base = ThemeData.dark(useMaterial3: true);
     final textTheme = GoogleFonts.poppinsTextTheme(base.textTheme);
     final scheme = base.colorScheme.copyWith(
-      primary: const Color(0xFFE5E7EB),
-      onPrimary: const Color(0xFF0E1115),
+      primary: accentColor,
+      onPrimary: accentColor.computeLuminance() > 0.5 ? Colors.black : const Color(0xFF0E1115),
       primaryContainer: const Color(0xFF2A2F36),
-      secondary: const Color(0xFFE5E7EB),
-      onSecondary: const Color(0xFF0E1115),
+      secondary: accentColor,
+      onSecondary: accentColor.computeLuminance() > 0.5 ? Colors.black : const Color(0xFF0E1115),
       secondaryContainer: const Color(0xFF1E2127),
       tertiary: const Color(0xFF6B7280),
       background: const Color(0xFF0F1216),
@@ -277,10 +291,10 @@ class AppTheme {
         titleTextStyle: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
         contentTextStyle: textTheme.bodyMedium,
       ),
-      floatingActionButtonTheme: const FloatingActionButtonThemeData(
-        backgroundColor: Color(0xFFE5E7EB),
-        foregroundColor: Color(0xFF0E1115),
-        shape: StadiumBorder(),
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
+        backgroundColor: scheme.primary,
+        foregroundColor: scheme.onPrimary,
+        shape: const StadiumBorder(),
       ),
       bottomSheetTheme: BottomSheetThemeData(
         backgroundColor: scheme.surface,

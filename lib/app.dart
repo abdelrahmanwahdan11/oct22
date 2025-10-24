@@ -57,11 +57,12 @@ class _RealEstateAppState extends State<RealEstateApp> {
               notifier: widget.propertiesController,
               child: Builder(builder: (context) {
                 final settings = NotifierProvider.of<SettingsController>(context);
-                return MaterialApp( 
+                final accent = AppTheme.accents[settings.accentIndex % AppTheme.accents.length];
+                return MaterialApp(
                   debugShowCheckedModeBanner: false,
                   title: 'RealEstate+',
-                  theme: AppTheme.light(),
-                  darkTheme: AppTheme.dark(),
+                  theme: AppTheme.light(accent: accent),
+                  darkTheme: AppTheme.dark(accent: accent),
                   themeMode: settings.themeMode,
                   locale: settings.locale,
                   supportedLocales: AppLocalizations.supportedLocales,
@@ -83,6 +84,13 @@ class _RealEstateAppState extends State<RealEstateApp> {
                   initialRoute:
                       settings.onboardingComplete ? 'auth.login' : 'onboarding',
                   onGenerateRoute: _router.onGenerateRoute,
+                  builder: (context, child) {
+                    final media = MediaQuery.of(context);
+                    return MediaQuery(
+                      data: media.copyWith(textScaler: TextScaler.linear(settings.textScale)),
+                      child: child ?? const SizedBox.shrink(),
+                    );
+                  },
                 );
               }),
             ),

@@ -2,21 +2,30 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../controllers/properties_controller.dart';
+import '../../controllers/settings_controller.dart';
 import '../../core/localization/app_localizations.dart';
 import '../../core/providers/notifier_provider.dart';
 import '../../core/utils/animations.dart';
 import '../../data/models/property.dart';
 
 class PropertyCard extends StatelessWidget {
-  const PropertyCard({super.key, required this.property, this.index = 0});
+  const PropertyCard({
+    super.key,
+    required this.property,
+    this.index = 0,
+    this.animate = true,
+  });
 
   final Property property;
   final int index;
+  final bool animate;
 
   @override
   Widget build(BuildContext context) {
     final strings = AppLocalizations.of(context);
     final controller = NotifierProvider.of<PropertiesController>(context);
+    final settings = NotifierProvider.of<SettingsController>(context);
+    final pricePerM2 = property.areaM2 == 0 ? 0 : property.price / property.areaM2;
     return GestureDetector(
       onTap: () => Navigator.of(context).pushNamed(
         'property.details',
@@ -130,13 +139,28 @@ class PropertyCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
                   Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        '${property.currency} ${property.price}',
-                        style: Theme.of(context)
-                            .textTheme
-                            .titleMedium
-                            ?.copyWith(fontWeight: FontWeight.w700),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '${property.currency} ${property.price}',
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleMedium
+                                ?.copyWith(fontWeight: FontWeight.w700),
+                          ),
+                          if (settings.featureEnabled('show_price_per_m2')) ...[
+                            const SizedBox(height: 4),
+                            Text(
+                              '${strings.t('price_per_m2_short')} ${(pricePerM2).toStringAsFixed(0)}',
+                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: Theme.of(context).hintColor,
+                                  ),
+                            ),
+                          ],
+                        ],
                       ),
                       const SizedBox(width: 12),
                       Container(
@@ -161,7 +185,7 @@ class PropertyCard extends StatelessWidget {
           ],
         ),
       ),
-    ).listItem(index: index);
+    ).maybeAnimate(index: index, enabled: animate);
   }
 }
 
@@ -186,5 +210,12 @@ class _IconStat extends StatelessWidget {
         ),
       ],
     );
+  }
+}
+
+extension _PropertyAnimations on Widget {
+  Widget maybeAnimate({required int index, required bool enabled}) {
+    if (!enabled) return this;
+    return listItem(index: index);
   }
 }

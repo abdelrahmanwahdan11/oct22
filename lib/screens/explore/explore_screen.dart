@@ -29,6 +29,8 @@ class _ExploreScreenState extends State<ExploreScreen> {
   final Set<String> _typeFilters = {};
   double _maxPrice = 1000000;
   String? _cityFilter;
+  bool _sustainableOnly = false;
+  bool _sustainabilityHydrated = false;
 
   @override
   void initState() {
@@ -92,8 +94,20 @@ class _ExploreScreenState extends State<ExploreScreen> {
       'Area ↓': strings.t('sort_area_high'),
     };
     final languageCode = strings.languageCode;
+    if (!_sustainabilityHydrated) {
+      _sustainableOnly = settings.featureEnabled('sustainability_focus');
+      _sustainabilityHydrated = true;
+    }
     final exploreItems =
         properties.explore.isNotEmpty ? properties.explore : properties.feed;
+    final filteredItems = _sustainableOnly
+        ? exploreItems
+            .where((property) => property.features.any(
+                (feature) => feature.toLowerCase().contains('solar') ||
+                    feature.toLowerCase().contains('green') ||
+                    feature.toLowerCase().contains('eco')))
+            .toList()
+        : exploreItems;
     final width = MediaQuery.of(context).size.width;
     final horizontalPadding = width >= 1000
         ? 60.0
@@ -114,6 +128,47 @@ class _ExploreScreenState extends State<ExploreScreen> {
             slivers: [
               SliverToBoxAdapter(child: SearchBarWidget()),
               SliverToBoxAdapter(child: FilterChipsRow()),
+              if (settings.featureEnabled('show_saved_filters') &&
+                  filters.savedFilter != null)
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding:
+                        EdgeInsets.fromLTRB(horizontalPadding, 12, horizontalPadding, 0),
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration:
+                          AppDecorations.sectionSurface(dark: settings.isDarkMode),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(strings.t('saved_filter_ready'),
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleMedium
+                                        ?.copyWith(fontWeight: FontWeight.w600)),
+                                const SizedBox(height: 4),
+                                Text(strings.t('saved_filter_ready_hint')),
+                              ],
+                            ),
+                          ),
+                          FilledButton.tonal(
+                            onPressed: () {
+                              final saved = filters.savedFilter;
+                              if (saved != null) {
+                                filters.update(saved);
+                                properties.refresh();
+                              }
+                            },
+                            child: Text(strings.t('apply_saved_filter')),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
               SliverPadding(
                 padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 12),
                 sliver: SliverToBoxAdapter(
@@ -238,6 +293,17 @@ class _ExploreScreenState extends State<ExploreScreen> {
                         ],
                       ),
                       const SizedBox(height: 12),
+                      if (settings.featureEnabled('show_sustainability_toggle'))
+                        SwitchListTile.adaptive(
+                          value: _sustainableOnly,
+                          onChanged: (value) {
+                            settings.setFeatureToggle('sustainability_focus', value);
+                            setState(() => _sustainableOnly = value);
+                          },
+                          title: Text(strings.t('sustainability_focus_title')),
+                          subtitle: Text(strings.t('sustainability_focus_hint')),
+                        ),
+                      const SizedBox(height: 8),
                       Text(strings.t('property_types'),
                           style: Theme.of(context)
                               .textTheme
@@ -344,121 +410,271 @@ class _ExploreScreenState extends State<ExploreScreen> {
                   ),
                 ),
               ),
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: EdgeInsets.fromLTRB(horizontalPadding, 8, horizontalPadding, 8),
-                  child: Text(strings.t('heatmap_insights'),
-                      style: Theme.of(context)
-                          .textTheme
-                          .titleMedium
-                          ?.copyWith(fontWeight: FontWeight.w700)),
-                ),
-              ),
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-                  child: Column(
-                    children: [
-                      for (final zone in AppContent.marketHeatmap)
-                        ListTile(
-                          leading: const FaIcon(FontAwesomeIcons.chartLine, size: 16),
-                          title: Text(AppContent.localizedText(
-                              (zone['title'] as Map<String, String>), languageCode)),
-                          trailing: Text('${zone['trend']}%'),
-                        ),
-                    ],
+              if (settings.featureEnabled('show_neighborhood_guides'))
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding:
+                        EdgeInsets.fromLTRB(horizontalPadding, 8, horizontalPadding, 8),
+                    child: Text(strings.t('neighborhood_guides'),
+                        style: Theme.of(context)
+                            .textTheme
+                            .titleMedium
+                            ?.copyWith(fontWeight: FontWeight.w700)),
                   ),
                 ),
-              ),
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: EdgeInsets.fromLTRB(horizontalPadding, 16, horizontalPadding, 8),
-                  child: Text(strings.t('subscribe_alerts'),
-                      style: Theme.of(context)
-                          .textTheme
-                          .titleMedium
-                          ?.copyWith(fontWeight: FontWeight.w700)),
-                ),
-              ),
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-                  child: Column(
-                    children: [
-                      for (final alert in AppContent.exploreAlerts)
-                        ListTile(
-                          leading: const FaIcon(FontAwesomeIcons.bell, size: 16),
-                          title: Text(AppContent.localizedText(
-                              (alert['title'] as Map<String, String>), languageCode)),
-                          subtitle: Text(AppContent.localizedText(
-                              (alert['body'] as Map<String, String>), languageCode)),
-                          trailing: FilledButton.tonal(
-                            onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text(strings.t('alert_subscribed'))),
-                            ),
-                            child: Text(strings.t('subscribe')),
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-              ),
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: EdgeInsets.fromLTRB(horizontalPadding, 16, horizontalPadding, 8),
-                  child: Text(strings.t('commute_profiles'),
-                      style: Theme.of(context)
-                          .textTheme
-                          .titleMedium
-                          ?.copyWith(fontWeight: FontWeight.w700)),
-                ),
-              ),
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-                  child: Wrap(
-                    spacing: 12,
-                    runSpacing: 12,
-                    children: [
-                      for (final profile in AppContent.commuteProfiles)
-                        Container(
-                          width: 220,
+              if (settings.featureEnabled('show_neighborhood_guides'))
+                SliverToBoxAdapter(
+                  child: SizedBox(
+                    height: 160,
+                    child: ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+                      itemCount: AppContent.neighborhoodSpotlights.length,
+                      separatorBuilder: (_, __) => const SizedBox(width: 12),
+                      itemBuilder: (context, index) {
+                        final item = AppContent.neighborhoodSpotlights[index];
+                        return Container(
+                          width: 240,
                           padding: const EdgeInsets.all(16),
-                          decoration: AppDecorations.sectionSurface(dark: settings.isDarkMode),
+                          decoration:
+                              AppDecorations.sectionSurface(dark: settings.isDarkMode),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(AppContent.localizedText(
-                                  (profile['title'] as Map<String, String>), languageCode),
+                              Text(item['title']!,
                                   style: Theme.of(context)
                                       .textTheme
                                       .titleMedium
                                       ?.copyWith(fontWeight: FontWeight.w600)),
-                              const SizedBox(height: 8),
-                              Text(AppContent.localizedText(
-                                  (profile['body'] as Map<String, String>), languageCode)),
+                              const SizedBox(height: 6),
+                              Text(item['subtitle']!,
+                                  style: Theme.of(context).textTheme.bodySmall),
                             ],
                           ),
-                        ),
-                    ],
+                        );
+                      },
+                    ),
                   ),
                 ),
-              ),
+              if (settings.featureEnabled('show_market_headlines'))
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding:
+                        EdgeInsets.fromLTRB(horizontalPadding, 16, horizontalPadding, 8),
+                    child: Text(strings.t('market_headlines'),
+                        style: Theme.of(context)
+                            .textTheme
+                            .titleMedium
+                            ?.copyWith(fontWeight: FontWeight.w700)),
+                  ),
+                ),
+              if (settings.featureEnabled('show_market_headlines'))
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+                    child: Column(
+                      children: [
+                        for (final headline in AppContent.marketHeadlines)
+                          ListTile(
+                            leading: const FaIcon(FontAwesomeIcons.newspaper, size: 16),
+                            title: Text(AppContent.localizedText(
+                                (headline['title'] as Map<String, String>), languageCode)),
+                            subtitle: Text(AppContent.localizedText(
+                                (headline['body'] as Map<String, String>), languageCode)),
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+              if (settings.featureEnabled('show_virtual_tours'))
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding:
+                        EdgeInsets.fromLTRB(horizontalPadding, 16, horizontalPadding, 8),
+                    child: Text(strings.t('virtual_tours'),
+                        style: Theme.of(context)
+                            .textTheme
+                            .titleMedium
+                            ?.copyWith(fontWeight: FontWeight.w700)),
+                  ),
+                ),
+              if (settings.featureEnabled('show_virtual_tours'))
+                SliverToBoxAdapter(
+                  child: SizedBox(
+                    height: 200,
+                    child: ListView.separated(
+                      padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+                      scrollDirection: Axis.horizontal,
+                      itemCount: AppContent.virtualTours.length,
+                      separatorBuilder: (_, __) => const SizedBox(width: 12),
+                      itemBuilder: (context, index) {
+                        final tour = AppContent.virtualTours[index];
+                        return Container(
+                          width: 240,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(22),
+                            image: DecorationImage(
+                              image: NetworkImage(tour['image']!),
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(22),
+                              gradient: LinearGradient(
+                                begin: Alignment.bottomCenter,
+                                end: Alignment.topCenter,
+                                colors: [
+                                  Colors.black.withOpacity(0.65),
+                                  Colors.transparent,
+                                ],
+                              ),
+                            ),
+                            padding: const EdgeInsets.all(16),
+                            alignment: Alignment.bottomLeft,
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(tour['title']!,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleSmall
+                                        ?.copyWith(color: Colors.white, fontWeight: FontWeight.w600)),
+                                const SizedBox(height: 4),
+                                Text('${strings.t('duration')} ${tour['duration']}',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .labelMedium
+                                        ?.copyWith(color: Colors.white70)),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+              if (settings.featureEnabled('show_service_directory'))
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding:
+                        EdgeInsets.fromLTRB(horizontalPadding, 16, horizontalPadding, 8),
+                    child: Text(strings.t('concierge_services'),
+                        style: Theme.of(context)
+                            .textTheme
+                            .titleMedium
+                            ?.copyWith(fontWeight: FontWeight.w700)),
+                  ),
+                ),
+              if (settings.featureEnabled('show_service_directory'))
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+                    child: Column(
+                      children: [
+                        for (final service in AppContent.serviceDirectory)
+                          ListTile(
+                            leading: const FaIcon(FontAwesomeIcons.headset, size: 16),
+                            title: Text(service['title']!),
+                            subtitle: Text(service['subtitle']!),
+                            trailing: FilledButton.tonal(
+                              onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text(strings.t('service_contacted'))),
+                              ),
+                              child: Text(strings.t('contact')), 
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+              if (settings.featureEnabled('show_events'))
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding:
+                        EdgeInsets.fromLTRB(horizontalPadding, 16, horizontalPadding, 8),
+                    child: Text(strings.t('community_events'),
+                        style: Theme.of(context)
+                            .textTheme
+                            .titleMedium
+                            ?.copyWith(fontWeight: FontWeight.w700)),
+                  ),
+                ),
+              if (settings.featureEnabled('show_events'))
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+                    child: Column(
+                      children: [
+                        for (final event in AppContent.communityEvents)
+                          ListTile(
+                            leading: const FaIcon(FontAwesomeIcons.calendarCheck, size: 16),
+                            title: Text(event['title'] as String),
+                            subtitle:
+                                Text('${event['date']} · ${event['location']}'),
+                            trailing: FilledButton.tonal(
+                              onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text(strings.t('event_reminder_created'))),
+                              ),
+                              child: Text(strings.t('remind_me')),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+              if (settings.featureEnabled('alert_center'))
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding:
+                        EdgeInsets.fromLTRB(horizontalPadding, 16, horizontalPadding, 8),
+                    child: Text(strings.t('subscribe_alerts'),
+                        style: Theme.of(context)
+                            .textTheme
+                            .titleMedium
+                            ?.copyWith(fontWeight: FontWeight.w700)),
+                  ),
+                ),
+              if (settings.featureEnabled('alert_center'))
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+                    child: Column(
+                      children: [
+                        for (final alert in AppContent.exploreAlerts)
+                          ListTile(
+                            leading: const FaIcon(FontAwesomeIcons.bell, size: 16),
+                            title: Text(AppContent.localizedText(
+                                (alert['title'] as Map<String, String>), languageCode)),
+                            subtitle: Text(AppContent.localizedText(
+                                (alert['body'] as Map<String, String>), languageCode)),
+                            trailing: FilledButton.tonal(
+                              onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text(strings.t('alert_subscribed'))),
+                              ),
+                              child: Text(strings.t('subscribe')),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
               if (_isGrid)
                 SliverPadding(
                   padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
                   sliver: SliverGrid(
                     delegate: SliverChildBuilderDelegate(
                       (context, index) {
-                        if (index >= exploreItems.length) {
+                        if (index >= filteredItems.length) {
                           return properties.loadingMore
                               ? const Center(child: CircularProgressIndicator())
                               : const SizedBox.shrink();
                         }
-                        final property = exploreItems[index];
-                        return PropertyCard(property: property, index: index);
+                        final property = filteredItems[index];
+                        return PropertyCard(property: property, index: index, animate: false);
                       },
-                      childCount: exploreItems.length + (properties.loadingMore ? 1 : 0),
+                      childCount: filteredItems.length + (properties.loadingMore ? 1 : 0),
                     ),
                     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: width >= 1100 ? 3 : 2,
@@ -472,7 +688,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                 SliverList(
                   delegate: SliverChildBuilderDelegate(
                     (context, index) {
-                      if (index >= exploreItems.length) {
+                      if (index >= filteredItems.length) {
                         return properties.loadingMore
                             ? const Padding(
                                 padding: EdgeInsets.symmetric(vertical: 24),
@@ -480,13 +696,13 @@ class _ExploreScreenState extends State<ExploreScreen> {
                               )
                             : const SizedBox.shrink();
                       }
-                      final property = exploreItems[index];
+                      final property = filteredItems[index];
                       return Padding(
                         padding: EdgeInsets.fromLTRB(horizontalPadding, 0, horizontalPadding, 16),
-                        child: PropertyCard(property: property, index: index),
+                        child: PropertyCard(property: property, index: index, animate: false),
                       );
                     },
-                    childCount: exploreItems.length + 1,
+                    childCount: filteredItems.length + 1,
                   ),
                 ),
               SliverToBoxAdapter(

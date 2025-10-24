@@ -16,6 +16,9 @@ class PrefsRepository {
   static const _compareKey = 'compare_properties';
   static const _favoriteNotesKey = 'favorite_notes';
   static const _savedAlertsKey = 'saved_alerts';
+  static const _accentKey = 'accent_index';
+  static const _textScaleKey = 'text_scale';
+  static const _featureTogglesKey = 'feature_toggles';
 
   SharedPreferences? _prefs;
 
@@ -174,6 +177,45 @@ class PrefsRepository {
   Future<void> saveSavedAlerts(Set<String> ids) async {
     await init();
     await _prefs!.setStringList(_savedAlertsKey, ids.toList());
+  }
+
+  Future<int> loadAccentIndex() async {
+    await init();
+    return _prefs!.getInt(_accentKey) ?? 0;
+  }
+
+  Future<void> saveAccentIndex(int index) async {
+    await init();
+    await _prefs!.setInt(_accentKey, index);
+  }
+
+  Future<double> loadTextScale() async {
+    await init();
+    return _prefs!.getDouble(_textScaleKey) ?? 1.0;
+  }
+
+  Future<void> saveTextScale(double value) async {
+    await init();
+    await _prefs!.setDouble(_textScaleKey, value);
+  }
+
+  Future<Map<String, bool>> loadFeatureToggles() async {
+    await init();
+    final raw = _prefs!.getString(_featureTogglesKey);
+    if (raw == null || raw.isEmpty) {
+      return {};
+    }
+    final decoded = json.decode(raw) as Map<String, dynamic>;
+    return decoded.map((key, value) => MapEntry(key, value == true));
+  }
+
+  Future<void> saveFeatureToggles(Map<String, bool> toggles) async {
+    await init();
+    if (toggles.isEmpty) {
+      await _prefs!.remove(_featureTogglesKey);
+      return;
+    }
+    await _prefs!.setString(_featureTogglesKey, json.encode(toggles));
   }
 
   Future<void> clear() async {
