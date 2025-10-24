@@ -388,8 +388,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ActionChip(
                           label: Text(query),
                           onPressed: () {
-                            properties.setSearchQuery(query);
-                            properties.registerSearch(query);
+                            properties.setSearchQuery(query, immediate: true);
                           },
                         ),
                     ],
@@ -454,6 +453,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     itemBuilder: (context, index) => PropertyCard(
                       property: properties.featured[index],
                       index: index,
+                      width: 260,
                     ),
                     separatorBuilder: (_, __) => const SizedBox(width: 16),
                     itemCount: properties.featured.length,
@@ -478,6 +478,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       itemBuilder: (context, index) => PropertyCard(
                         property: properties.recommended[index],
                         index: index,
+                        width: 260,
                       ),
                       separatorBuilder: (_, __) => const SizedBox(width: 16),
                       itemCount: properties.recommended.length,
@@ -502,6 +503,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       itemBuilder: (context, index) => PropertyCard(
                         property: properties.recentlyViewed[index],
                         index: index,
+                        width: 260,
                       ),
                       separatorBuilder: (_, __) => const SizedBox(width: 16),
                       itemCount: properties.recentlyViewed.length,

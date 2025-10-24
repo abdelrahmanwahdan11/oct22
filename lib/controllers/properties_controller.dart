@@ -125,24 +125,23 @@ class PropertiesController extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setSearchQuery(String query) {
-    _searchQuery = query;
+  void setSearchQuery(String query, {bool immediate = false}) {
+    final normalized = query.trim();
+    final changed = _searchQuery != normalized;
+    if (!immediate && !changed) {
+      return;
+    }
+    _searchQuery = normalized;
     _debounce?.cancel();
-    _loading = true;
-    notifyListeners();
-    _debounce = Timer(const Duration(milliseconds: 350), () async {
-      try {
-        _page = 1;
-        _hasMore = true;
-        await _loadFeed(reset: true);
-      } catch (_) {
-        _seedFallbacks();
-      } finally {
-        _rebuildRecommendations();
-        _loading = false;
-        notifyListeners();
-      }
-    });
+    if (immediate) {
+      _runSearch(recordRecent: changed, notifyStart: true);
+    } else {
+      _loading = true;
+      notifyListeners();
+      _debounce = Timer(const Duration(milliseconds: 350), () {
+        _runSearch(recordRecent: changed, notifyStart: false);
+      });
+    }
   }
 
   void applyLifestyle(String lifestyleId) {
@@ -171,11 +170,35 @@ class PropertiesController extends ChangeNotifier {
     _filtersController.reset();
   }
 
-  Future<void> registerSearch(String query) async {
-    if (query.isEmpty) return;
-    await _prefsRepository.addRecentSearch(query);
+  Future<void> registerSearch(String query, {bool notify = true}) async {
+    final normalized = query.trim();
+    if (normalized.isEmpty) return;
+    await _prefsRepository.addRecentSearch(normalized);
     await _loadRecentSearches();
-    notifyListeners();
+    if (notify) {
+      notifyListeners();
+    }
+  }
+
+  Future<void> _runSearch({required bool recordRecent, required bool notifyStart}) async {
+    if (notifyStart) {
+      _loading = true;
+      notifyListeners();
+    }
+    try {
+      _page = 1;
+      _hasMore = true;
+      await _loadFeed(reset: true);
+      if (recordRecent && _searchQuery.length >= 3) {
+        await registerSearch(_searchQuery, notify: false);
+      }
+    } catch (_) {
+      _seedFallbacks();
+    } finally {
+      _rebuildRecommendations();
+      _loading = false;
+      notifyListeners();
+    }
   }
 
   Future<void> registerView(String id) async {

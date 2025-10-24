@@ -66,14 +66,13 @@ class _SearchScreenState extends State<SearchScreen> {
                   icon: const FaIcon(FontAwesomeIcons.circleXmark, size: 16),
                   onPressed: () {
                     _controller.clear();
-                    properties.setSearchQuery('');
+                    properties.setSearchQuery('', immediate: true);
                   },
                 ),
               ),
               onChanged: properties.setSearchQuery,
-              onSubmitted: (value) {
-                properties.registerSearch(value);
-              },
+              onSubmitted: (value) =>
+                  properties.setSearchQuery(value, immediate: true),
             ).fadeMove(),
             const SizedBox(height: 16),
             SegmentedButton<String>(
@@ -86,7 +85,7 @@ class _SearchScreenState extends State<SearchScreen> {
               onSelectionChanged: (values) {
                 setState(() => _status = values.first);
                 final query = values.first == 'all' ? null : values.first;
-                properties.setSearchQuery(_controller.text);
+                properties.setSearchQuery(_controller.text, immediate: true);
                 if (query != null) {
                   properties.registerSearch('${_controller.text} $query');
                 }
@@ -107,8 +106,7 @@ class _SearchScreenState extends State<SearchScreen> {
                     label: Text(query),
                     onPressed: () {
                       _controller.text = query;
-                      properties.setSearchQuery(query);
-                      properties.registerSearch(query);
+                      properties.setSearchQuery(query, immediate: true);
                     },
                   ),
               ],
@@ -129,7 +127,7 @@ class _SearchScreenState extends State<SearchScreen> {
                       label: Text(recent),
                       onPressed: () {
                         _controller.text = recent;
-                        properties.setSearchQuery(recent);
+                        properties.setSearchQuery(recent, immediate: true);
                       },
                     ),
                 ],

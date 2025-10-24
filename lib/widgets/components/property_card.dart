@@ -14,11 +14,13 @@ class PropertyCard extends StatelessWidget {
     required this.property,
     this.index = 0,
     this.animate = true,
+    this.width,
   });
 
   final Property property;
   final int index;
   final bool animate;
+  final double? width;
 
   @override
   Widget build(BuildContext context) {
@@ -27,12 +29,13 @@ class PropertyCard extends StatelessWidget {
     final settings = NotifierProvider.of<SettingsController>(context);
     final pricePerM2 = property.areaM2 == 0 ? 0 : property.price / property.areaM2;
     return GestureDetector(
+      behavior: HitTestBehavior.opaque,
       onTap: () => Navigator.of(context).pushNamed(
         'property.details',
         arguments: property.id,
       ),
       child: Container(
-        width: 260,
+        width: width,
         decoration: BoxDecoration(
           color: Theme.of(context).cardColor,
           borderRadius: BorderRadius.circular(22),
@@ -46,14 +49,16 @@ class PropertyCard extends StatelessWidget {
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Expanded(
-              child: Stack(
-                children: [
-                  Hero(
-                    tag: 'property_image_${property.id}',
-                    child: ClipRRect(
-                      borderRadius: const BorderRadius.vertical(top: Radius.circular(22)),
+            Stack(
+              children: [
+                Hero(
+                  tag: 'property_image_${property.id}',
+                  child: ClipRRect(
+                    borderRadius: const BorderRadius.vertical(top: Radius.circular(22)),
+                    child: AspectRatio(
+                      aspectRatio: 4 / 3,
                       child: Image.network(
                         property.images.first,
                         width: double.infinity,
@@ -61,31 +66,31 @@ class PropertyCard extends StatelessWidget {
                       ),
                     ),
                   ),
-                  Positioned(
-                    top: 12,
-                    right: 12,
-                    child: GestureDetector(
-                      onTap: () async {
-                        await controller.toggleFavorite(property);
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: Colors.black45,
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: FaIcon(
-                          property.favorite
-                              ? FontAwesomeIcons.solidHeart
-                              : FontAwesomeIcons.heart,
-                          size: 16,
-                          color: property.favorite ? Colors.redAccent : Colors.white,
-                        ),
+                ),
+                Positioned(
+                  top: 12,
+                  right: 12,
+                  child: GestureDetector(
+                    onTap: () async {
+                      await controller.toggleFavorite(property);
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.black45,
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: FaIcon(
+                        property.favorite
+                            ? FontAwesomeIcons.solidHeart
+                            : FontAwesomeIcons.heart,
+                        size: 16,
+                        color: property.favorite ? Colors.redAccent : Colors.white,
                       ),
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
             Padding(
               padding: const EdgeInsets.all(16),

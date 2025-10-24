@@ -21,6 +21,9 @@ class _SearchBarWidgetState extends State<SearchBarWidget> {
     super.initState();
     final properties = NotifierProvider.read<PropertiesController>(context);
     _controller = TextEditingController(text: properties.searchQuery);
+    _controller.addListener(() {
+      setState(() {});
+    });
   }
 
   @override
@@ -55,13 +58,24 @@ class _SearchBarWidgetState extends State<SearchBarWidget> {
             child: TextField(
               controller: _controller,
               onChanged: properties.setSearchQuery,
-              onSubmitted: (value) => properties.registerSearch(value),
+              onSubmitted: (value) =>
+                  properties.setSearchQuery(value, immediate: true),
+              textInputAction: TextInputAction.search,
               decoration: InputDecoration(
                 hintText: strings.t('search_hint'),
                 border: InputBorder.none,
               ),
             ),
           ),
+          if (_controller.text.isNotEmpty) ...[
+            IconButton(
+              icon: const FaIcon(FontAwesomeIcons.xmark, size: 16),
+              onPressed: () {
+                _controller.clear();
+                properties.setSearchQuery('', immediate: true);
+              },
+            ),
+          ],
           IconButton(
             icon: const FaIcon(FontAwesomeIcons.sliders, size: 18),
             onPressed: () => Navigator.of(context).pushNamed('filters.sheet'),

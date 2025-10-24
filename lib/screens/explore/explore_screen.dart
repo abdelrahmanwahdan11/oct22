@@ -399,8 +399,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                               ActionChip(
                                 label: Text(item),
                                 onPressed: () {
-                                  properties.setSearchQuery(item);
-                                  properties.registerSearch(item);
+                                  properties.setSearchQuery(item, immediate: true);
                                 },
                               ),
                           ],
