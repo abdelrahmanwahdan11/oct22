@@ -6,12 +6,18 @@ import '../../controllers/settings_controller.dart';
 import '../../core/localization/app_localizations.dart';
 import '../../core/providers/notifier_provider.dart';
 import '../../core/theme/app_theme.dart';
+import '../../data/mock/app_content.dart';
 import '../../widgets/components/app_bottom_navigation.dart';
 import '../../widgets/components/property_card.dart';
 
-class SavedScreen extends StatelessWidget {
+class SavedScreen extends StatefulWidget {
   const SavedScreen({super.key});
 
+  @override
+  State<SavedScreen> createState() => _SavedScreenState();
+}
+
+class _SavedScreenState extends State<SavedScreen> {
   @override
   Widget build(BuildContext context) {
     final strings = AppLocalizations.of(context);
@@ -89,14 +95,139 @@ class SavedScreen extends StatelessWidget {
                       ),
                     ),
                   ),
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(strings.t('saved_collections'),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleMedium
+                                  ?.copyWith(fontWeight: FontWeight.w600)),
+                          const SizedBox(height: 8),
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: [
+                              for (final entry in AppContent.savedCollections)
+                                Container(
+                                  width: 180,
+                                  padding: const EdgeInsets.all(12),
+                                  decoration:
+                                      AppDecorations.glassCard(dark: settings.isDarkMode),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        AppContent.localizedText(
+                                            (entry['title'] as Map<String, String>),
+                                            strings.languageCode),
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .titleSmall
+                                            ?.copyWith(fontWeight: FontWeight.w600),
+                                      ),
+                                      const SizedBox(height: 6),
+                                      Text(
+                                        AppContent.localizedText(
+                                            (entry['body'] as Map<String, String>),
+                                            strings.languageCode),
+                                        style: Theme.of(context).textTheme.bodySmall,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: Column(
+                        children: [
+                          for (final contact in AppContent.advisorContacts)
+                            ListTile(
+                              leading: const FaIcon(FontAwesomeIcons.userTie, size: 16),
+                              title: Text(AppContent.localizedText(
+                                  (contact['title'] as Map<String, String>),
+                                  strings.languageCode)),
+                              subtitle: Text(contact['phone'] as String),
+                              onTap: () => ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text(strings.t('advisor_contacted'))),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
                   SliverPadding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     sliver: SliverGrid(
                       delegate: SliverChildBuilderDelegate(
-                        (context, index) => PropertyCard(
-                          property: items[index],
-                          index: index,
-                        ),
+                        (context, index) {
+                          final property = items[index];
+                          final note = favorites.noteFor(property.id);
+                          final hasAlert = favorites.hasAlert(property.id);
+                          return Stack(
+                            children: [
+                              Positioned.fill(
+                                child: PropertyCard(
+                                  property: property,
+                                  index: index,
+                                ),
+                              ),
+                              Positioned(
+                                top: 8,
+                                right: 8,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  children: [
+                                    IconButton(
+                                      icon: const FaIcon(FontAwesomeIcons.noteSticky, size: 16),
+                                      onPressed: () => _editNote(context, favorites, property.id, note),
+                                      tooltip: strings.t('add_note'),
+                                    ),
+                                    IconButton(
+                                      icon: FaIcon(
+                                        hasAlert
+                                            ? FontAwesomeIcons.bell
+                                            : FontAwesomeIcons.bellSlash,
+                                        size: 16,
+                                      ),
+                                      onPressed: () async {
+                                        await favorites.toggleAlert(property.id);
+                                        if (!mounted) return;
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(content: Text(strings.t('alert_toggle_success'))),
+                                        );
+                                      },
+                                      tooltip: strings.t('price_drop_alert'),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              if (note.isNotEmpty)
+                                Positioned(
+                                  left: 12,
+                                  right: 12,
+                                  bottom: 12,
+                                  child: Container(
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: AppDecorations.glassCard(dark: settings.isDarkMode),
+                                    child: Text(note,
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: Theme.of(context).textTheme.labelMedium),
+                                  ),
+                                ),
+                            ],
+                          );
+                        },
                         childCount: items.length,
                       ),
                       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -111,6 +242,35 @@ class SavedScreen extends StatelessWidget {
                 ],
               ),
       ),
+    );
+  }
+
+  Future<void> _editNote(BuildContext context, FavoritesController favorites, String id, String initial) async {
+    final strings = AppLocalizations.of(context);
+    final controller = TextEditingController(text: initial);
+    final result = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(strings.t('add_note')),
+        content: TextField(
+          controller: controller,
+          maxLines: 3,
+          decoration: InputDecoration(hintText: strings.t('note_hint')),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.of(context).pop(), child: Text(strings.t('cancel'))),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(controller.text),
+            child: Text(strings.t('save')),
+          ),
+        ],
+      ),
+    );
+    if (result == null) return;
+    await favorites.updateNote(id, result.trim());
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(strings.t('note_saved'))),
     );
   }
 }

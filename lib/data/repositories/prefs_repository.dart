@@ -13,6 +13,9 @@ class PrefsRepository {
   static const _recentSearchesKey = 'recent_searches';
   static const _recentViewsKey = 'recent_views';
   static const _submittedPropertiesKey = 'submitted_properties';
+  static const _compareKey = 'compare_properties';
+  static const _favoriteNotesKey = 'favorite_notes';
+  static const _savedAlertsKey = 'saved_alerts';
 
   SharedPreferences? _prefs;
 
@@ -130,6 +133,47 @@ class PrefsRepository {
     raw.insert(0, json.encode(jsonMap));
     final limited = raw.take(25).toList();
     await _prefs!.setStringList(_submittedPropertiesKey, limited);
+  }
+
+  Future<Set<String>> loadCompare() async {
+    await init();
+    final list = _prefs!.getStringList(_compareKey) ?? <String>[];
+    return list.toSet();
+  }
+
+  Future<void> saveCompare(Set<String> ids) async {
+    await init();
+    await _prefs!.setStringList(_compareKey, ids.toList());
+  }
+
+  Future<Map<String, String>> loadFavoriteNotes() async {
+    await init();
+    final raw = _prefs!.getString(_favoriteNotesKey);
+    if (raw == null || raw.isEmpty) {
+      return {};
+    }
+    final decoded = json.decode(raw) as Map<String, dynamic>;
+    return decoded.map((key, value) => MapEntry(key, value.toString()));
+  }
+
+  Future<void> saveFavoriteNotes(Map<String, String> notes) async {
+    await init();
+    if (notes.isEmpty) {
+      await _prefs!.remove(_favoriteNotesKey);
+      return;
+    }
+    await _prefs!.setString(_favoriteNotesKey, json.encode(notes));
+  }
+
+  Future<Set<String>> loadSavedAlerts() async {
+    await init();
+    final list = _prefs!.getStringList(_savedAlertsKey) ?? <String>[];
+    return list.toSet();
+  }
+
+  Future<void> saveSavedAlerts(Set<String> ids) async {
+    await init();
+    await _prefs!.setStringList(_savedAlertsKey, ids.toList());
   }
 
   Future<void> clear() async {

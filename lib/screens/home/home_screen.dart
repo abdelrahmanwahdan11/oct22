@@ -25,37 +25,37 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  PropertiesController? _controller;
+  late final ScrollController _scrollController;
+  double _budget = 350000;
+  final Set<int> _completedTasks = {};
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    final controller = NotifierProvider.of<PropertiesController>(context);
-    if (_controller != controller) {
-      _controller?.scrollController.removeListener(_onScroll);
-      _controller = controller;
-      controller.scrollController.addListener(_onScroll);
-    }
-  }
-
-  void _onScroll() {
-    final controller = _controller;
-    if (controller == null) return;
-    if (controller.scrollController.position.pixels >
-        controller.scrollController.position.maxScrollExtent - 120) {
-      controller.loadMore();
-    }
+  void initState() {
+    super.initState();
+    _scrollController = ScrollController()
+      ..addListener(() {
+        final properties = NotifierProvider.read<PropertiesController>(context);
+        if (_scrollController.position.pixels >
+            _scrollController.position.maxScrollExtent - 120) {
+          properties.loadMore();
+        }
+      });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final properties = NotifierProvider.read<PropertiesController>(context);
+      properties.ensureLoaded();
+    });
   }
 
   @override
   void dispose() {
-    _controller?.scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final strings = AppLocalizations.of(context);
+    final languageCode = strings.languageCode;
     final settings = NotifierProvider.of<SettingsController>(context);
     final properties = NotifierProvider.of<PropertiesController>(context);
     final auth = NotifierProvider.of<AuthController>(context);
@@ -69,6 +69,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 : 20.0;
     final featuredHeight = width > 900 ? 300.0 : 260.0;
     final bool isGrid = width >= 900;
+    final monthlyEstimate = ((_budget * 0.8) / 360) * 1.035;
+    final downPayment = _budget * 0.2;
     return Scaffold(
       appBar: AppBar(
         title: Text(strings.t('app_name')),
@@ -79,7 +81,9 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           IconButton(
             icon: const FaIcon(FontAwesomeIcons.bell, size: 18),
-            onPressed: () {},
+            onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(strings.t('notifications_placeholder'))),
+            ),
           ),
         ],
       ),
@@ -94,7 +98,7 @@ class _HomeScreenState extends State<HomeScreen> {
         child: RefreshIndicator(
           onRefresh: properties.refresh,
           child: CustomScrollView(
-            controller: properties.scrollController,
+            controller: _scrollController,
             slivers: [
               SliverToBoxAdapter(
                 child: Padding(
@@ -129,8 +133,133 @@ class _HomeScreenState extends State<HomeScreen> {
               SliverToBoxAdapter(child: FilterChipsRow()),
               SliverToBoxAdapter(
                 child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 8),
+                  child: Wrap(
+                    spacing: 12,
+                    runSpacing: 12,
+                    children: [
+                      for (final action in AppContent.homeQuickActions)
+                        ActionChip(
+                          avatar: FaIcon(
+                            AppIcons.map[action['icon']] ?? FontAwesomeIcons.circleDot,
+                            size: 16,
+                          ),
+                          label: Text(AppContent.localizedText(
+                              (action['label'] as Map<String, String>), languageCode)),
+                          onPressed: () {
+                            final route = action['route'] as String;
+                            if (route == 'booking.sheet') {
+                              Navigator.of(context).pushNamed(route,
+                                  arguments: {'propertyId': properties.feed.isNotEmpty ? properties.feed.first.id : 'p1'});
+                            } else {
+                              Navigator.of(context).pushNamed(route);
+                            }
+                          },
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+              SliverToBoxAdapter(
+                child: Padding(
                   padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-                  child: PillTabs(onChanged: (_) {}),
+                  child: PillTabs(
+                    onChanged: (index) {
+                      if (index == 0) {
+                        properties.clearLifestyle();
+                      } else if (index == 1) {
+                        properties.applyLifestyle('family');
+                      } else {
+                        properties.applyLifestyle('city');
+                      }
+                    },
+                  ),
+                ),
+              ),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 12),
+                  child: Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: AppDecorations.glassCard(dark: settings.isDarkMode),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(strings.t('budget_planner'),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleMedium
+                                    ?.copyWith(fontWeight: FontWeight.w600)),
+                            Text('${_budget.toStringAsFixed(0)} ${strings.t('currency_short')}'),
+                          ],
+                        ),
+                        Slider(
+                          value: _budget,
+                          min: 120000,
+                          max: 1200000,
+                          divisions: 18,
+                          onChanged: (value) => setState(() => _budget = value),
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(strings.t('budget_monthly_label'),
+                                      style: Theme.of(context).textTheme.labelLarge),
+                                  const SizedBox(height: 4),
+                                  Text('${monthlyEstimate.toStringAsFixed(0)} ${strings.t('currency_short')}/m',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .titleMedium
+                                          ?.copyWith(fontWeight: FontWeight.w700)),
+                                ],
+                              ),
+                            ),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(strings.t('down_payment'),
+                                      style: Theme.of(context).textTheme.labelLarge),
+                                  const SizedBox(height: 4),
+                                  Text('${downPayment.toStringAsFixed(0)} ${strings.t('currency_short')}',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .titleMedium
+                                          ?.copyWith(fontWeight: FontWeight.w700)),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            for (final advisory in AppContent.budgetAdvisories)
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 8),
+                                child: ListTile(
+                                  contentPadding: EdgeInsets.zero,
+                                  dense: true,
+                                  leading: const FaIcon(FontAwesomeIcons.lightbulb, size: 16),
+                                  title: Text(AppContent.localizedText(
+                                      (advisory['title'] as Map<String, String>), languageCode)),
+                                  subtitle: Text(AppContent.localizedText(
+                                      (advisory['body'] as Map<String, String>), languageCode)),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ),
               SliverToBoxAdapter(
@@ -172,6 +301,49 @@ class _HomeScreenState extends State<HomeScreen> {
                           },
                         ),
                     ],
+                  ),
+                ),
+              ),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding:
+                      EdgeInsets.fromLTRB(horizontalPadding, 0, horizontalPadding, 12),
+                  child: _SectionHeader(title: strings.t('travel_times')),
+                ),
+              ),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: AppDecorations.sectionSurface(dark: settings.isDarkMode),
+                    child: Column(
+                      children: [
+                        for (final place in AppContent.travelTimes)
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    AppContent.localizedText(
+                                        (place['title'] as Map<String, String>), languageCode),
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleMedium
+                                        ?.copyWith(fontWeight: FontWeight.w600),
+                                  ),
+                                ),
+                                _TravelTimePill(label: '🚗', value: place['car'] as int?),
+                                const SizedBox(width: 8),
+                                _TravelTimePill(label: '🚆', value: place['transit'] as int?),
+                                const SizedBox(width: 8),
+                                _TravelTimePill(label: '🚲', value: place['bike'] as int?),
+                              ],
+                            ),
+                          ),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -281,6 +453,87 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         ),
                     ],
+                  ),
+                ),
+              ),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding:
+                      EdgeInsets.fromLTRB(horizontalPadding, 28, horizontalPadding, 12),
+                  child: _SectionHeader(title: strings.t('renovation_tasks')),
+                ),
+              ),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+                  child: Column(
+                    children: [
+                      for (var i = 0; i < AppContent.renovationChecklist.length; i++)
+                        CheckboxListTile(
+                          value: _completedTasks.contains(i),
+                          onChanged: (value) {
+                            setState(() {
+                              if (value == true) {
+                                _completedTasks.add(i);
+                              } else {
+                                _completedTasks.remove(i);
+                              }
+                            });
+                          },
+                          controlAffinity: ListTileControlAffinity.leading,
+                          title: Text(AppContent.localizedText(
+                              (AppContent.renovationChecklist[i]['title'] as Map<String, String>),
+                              languageCode)),
+                          subtitle: Text(AppContent.localizedText(
+                              (AppContent.renovationChecklist[i]['detail'] as Map<String, String>),
+                              languageCode)),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding:
+                      EdgeInsets.fromLTRB(horizontalPadding, 28, horizontalPadding, 12),
+                  child: _SectionHeader(title: strings.t('resident_stories')),
+                ),
+              ),
+              SliverToBoxAdapter(
+                child: SizedBox(
+                  height: 180,
+                  child: PageView.builder(
+                    controller: PageController(viewportFraction: 0.85),
+                    itemCount: AppContent.successStories.length,
+                    itemBuilder: (context, index) {
+                      final story = AppContent.successStories[index];
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        child: Container(
+                          padding: const EdgeInsets.all(20),
+                          decoration: AppDecorations.glassCard(dark: settings.isDarkMode),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                AppContent.localizedText(
+                                    (story['title'] as Map<String, String>), languageCode),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleMedium
+                                    ?.copyWith(fontWeight: FontWeight.w700),
+                              ),
+                              const SizedBox(height: 12),
+                              Text(
+                                AppContent.localizedText(
+                                    (story['body'] as Map<String, String>), languageCode),
+                                style: Theme.of(context).textTheme.bodyMedium,
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
                   ),
                 ),
               ),
@@ -427,6 +680,89 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Padding(
                   padding:
                       EdgeInsets.fromLTRB(horizontalPadding, 28, horizontalPadding, 12),
+                  child: _SectionHeader(title: strings.t('insurance_offers')),
+                ),
+              ),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+                  child: Column(
+                    children: [
+                      for (final option in AppContent.insuranceOptions)
+                        ListTile(
+                          leading: const FaIcon(FontAwesomeIcons.shieldHalved, size: 18),
+                          title: Text(AppContent.localizedText(
+                              (option['title'] as Map<String, String>), languageCode)),
+                          subtitle: Text(AppContent.localizedText(
+                              (option['body'] as Map<String, String>), languageCode)),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding:
+                      EdgeInsets.fromLTRB(horizontalPadding, 28, horizontalPadding, 12),
+                  child: _SectionHeader(title: strings.t('maintenance_schedule')),
+                ),
+              ),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+                  child: Column(
+                    children: [
+                      for (final reminder in AppContent.maintenanceReminders)
+                        ListTile(
+                          leading: const FaIcon(FontAwesomeIcons.wrench, size: 18),
+                          title: Text(AppContent.localizedText(
+                              (reminder['title'] as Map<String, String>), languageCode)),
+                          trailing: Text(reminder['schedule'] as String),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding:
+                      EdgeInsets.fromLTRB(horizontalPadding, 28, horizontalPadding, 12),
+                  child: _SectionHeader(title: strings.t('guarantee_programs')),
+                ),
+              ),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+                  child: Column(
+                    children: [
+                      for (final badge in AppContent.guaranteeBadges)
+                        Container(
+                          margin: const EdgeInsets.only(bottom: 12),
+                          padding: const EdgeInsets.all(16),
+                          decoration: AppDecorations.glassCard(dark: settings.isDarkMode),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(AppContent.localizedText(
+                                  (badge['title'] as Map<String, String>), languageCode),
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .titleMedium
+                                      ?.copyWith(fontWeight: FontWeight.w600)),
+                              const SizedBox(height: 6),
+                              Text(AppContent.localizedText(
+                                  (badge['body'] as Map<String, String>), languageCode)),
+                            ],
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding:
+                      EdgeInsets.fromLTRB(horizontalPadding, 28, horizontalPadding, 12),
                   child: _SectionHeader(title: strings.t('service_directory')),
                 ),
               ),
@@ -445,6 +781,74 @@ class _HomeScreenState extends State<HomeScreen> {
                           subtitle: Text(service['subtitle']!),
                         ),
                     ],
+                  ),
+                ),
+              ),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding:
+                      EdgeInsets.fromLTRB(horizontalPadding, 28, horizontalPadding, 12),
+                  child: _SectionHeader(title: strings.t('top_agents')),
+                ),
+              ),
+              SliverToBoxAdapter(
+                child: SizedBox(
+                  height: 160,
+                  child: ListView.separated(
+                    padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+                    scrollDirection: Axis.horizontal,
+                    itemBuilder: (context, index) {
+                      final agent = AppContent.topAgents[index];
+                      return Container(
+                        width: 220,
+                        padding: const EdgeInsets.all(16),
+                        decoration: AppDecorations.glassCard(dark: settings.isDarkMode),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                CircleAvatar(
+                                  backgroundImage: NetworkImage(agent['photo'] as String),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(AppContent.localizedText(
+                                          (agent['name'] as Map<String, String>), languageCode),
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .titleMedium
+                                              ?.copyWith(fontWeight: FontWeight.w600)),
+                                      Text(AppContent.localizedText(
+                                          (agent['city'] as Map<String, String>), languageCode)),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            Row(
+                              children: [
+                                const FaIcon(FontAwesomeIcons.star, size: 14, color: Colors.amber),
+                                const SizedBox(width: 6),
+                                Text('${agent['rating']}'),
+                              ],
+                            ),
+                            const Spacer(),
+                            FilledButton.tonal(
+                              onPressed: () => Navigator.of(context).pushNamed('agent.details',
+                                  arguments: agent['name']),
+                              child: Text(strings.t('contact_agent')),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                    separatorBuilder: (_, __) => const SizedBox(width: 16),
+                    itemCount: AppContent.topAgents.length,
                   ),
                 ),
               ),
@@ -646,10 +1050,45 @@ class _SectionHeader extends StatelessWidget {
   }
 }
 
+class _TravelTimePill extends StatelessWidget {
+  const _TravelTimePill({required this.label, required this.value});
+
+  final String label;
+  final int? value;
+
+  @override
+  Widget build(BuildContext context) {
+    final text = value == null || value == 0 ? '–' : '${value!}m';
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Theme.of(context).dividerColor.withOpacity(0.2)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(label),
+          const SizedBox(width: 4),
+          Text(text, style: Theme.of(context).textTheme.labelMedium),
+        ],
+      ),
+    );
+  }
+}
+
 class AppIcons {
   static const Map<String, IconData> map = {
     'wand-magic-sparkles': FontAwesomeIcons.wandMagicSparkles,
     'house-signal': FontAwesomeIcons.houseSignal,
     'truck-fast': FontAwesomeIcons.truckFast,
+    'plus': FontAwesomeIcons.plus,
+    'heart': FontAwesomeIcons.heart,
+    'scale-balanced': FontAwesomeIcons.scaleBalanced,
+    'calendar-check': FontAwesomeIcons.calendarCheck,
+    'file-lines': FontAwesomeIcons.fileLines,
+    'file-shield': FontAwesomeIcons.fileShield,
+    'book': FontAwesomeIcons.book,
   };
 }

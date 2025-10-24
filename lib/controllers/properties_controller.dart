@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../data/mock/app_content.dart';
 import '../data/models/filters.dart';
 import '../data/models/property.dart';
 import '../data/repositories/prefs_repository.dart';
@@ -25,8 +26,6 @@ class PropertiesController extends ChangeNotifier {
   final FavoritesController _favoritesController;
   final PrefsRepository _prefsRepository;
 
-  final ScrollController scrollController = ScrollController();
-
   List<Property> _featured = [];
   List<Property> _explore = [];
   List<Property> _feed = [];
@@ -39,6 +38,9 @@ class PropertiesController extends ChangeNotifier {
   int _page = 1;
   Timer? _debounce;
   String _searchQuery = '';
+  bool _initialized = false;
+  String? _activeLifestyle;
+  Set<String> _compareIds = {};
 
   List<Property> get featured => _featured;
   List<Property> get explore => _explore;
@@ -50,13 +52,21 @@ class PropertiesController extends ChangeNotifier {
   bool get loadingMore => _loadingMore;
   bool get hasMore => _hasMore;
   String get searchQuery => _searchQuery;
+  bool get initialized => _initialized;
+  String? get activeLifestyle => _activeLifestyle;
+  Set<String> get compareIds => _compareIds;
 
   Filters get filters => _filtersController.filters;
 
   Property? findById(String id) => _propertiesRepository.findById(id);
 
+  Future<void> ensureLoaded() async {
+    if (_initialized) return;
+    await loadInitial();
+  }
+
   Future<void> loadInitial() async {
-    if (_loading) return;
+    if (_loading || _initialized) return;
     _loading = true;
     notifyListeners();
     await Future.wait([
@@ -66,7 +76,9 @@ class PropertiesController extends ChangeNotifier {
     ]);
     await _loadRecentSearches();
     await _loadRecentViews();
+    await _loadCompare();
     _rebuildRecommendations();
+    _initialized = true;
     _loading = false;
     notifyListeners();
   }
@@ -110,6 +122,32 @@ class PropertiesController extends ChangeNotifier {
     });
   }
 
+  void applyLifestyle(String lifestyleId) {
+    final preset = AppContent.lifestylePresets
+        .firstWhere((item) => item['id'] == lifestyleId, orElse: () => {});
+    if (preset.isEmpty) return;
+    _activeLifestyle = lifestyleId;
+    final types = (preset['types'] as List?)?.cast<String>() ?? const [];
+    final status = preset['status'] as String?;
+    final city = preset['city'] as String?;
+    final minBeds = preset['minBeds'] as int?;
+    final sort = preset['sort'] as String?;
+    final updated = filters.copyWith(
+      status: status,
+      types: types,
+      city: city,
+      minBeds: minBeds,
+      sort: sort,
+    );
+    _filtersController.update(updated);
+    refresh();
+  }
+
+  void clearLifestyle() {
+    _activeLifestyle = null;
+    _filtersController.reset();
+  }
+
   Future<void> registerSearch(String query) async {
     if (query.isEmpty) return;
     await _prefsRepository.addRecentSearch(query);
@@ -126,6 +164,21 @@ class PropertiesController extends ChangeNotifier {
 
   List<Property> similarTo(String id) {
     return _propertiesRepository.similarProperties(id);
+  }
+
+  bool isInCompare(String id) => _compareIds.contains(id);
+
+  List<Property> compareList() =>
+      _compareIds.map(_propertiesRepository.findById).whereType<Property>().toList();
+
+  Future<void> toggleCompare(String id) async {
+    if (_compareIds.contains(id)) {
+      _compareIds.remove(id);
+    } else {
+      _compareIds.add(id);
+    }
+    await _prefsRepository.saveCompare(_compareIds);
+    notifyListeners();
   }
 
   Future<Property> submitProperty({
@@ -258,10 +311,13 @@ class PropertiesController extends ChangeNotifier {
     _recommended = _mapFavorites(pool);
   }
 
+  Future<void> _loadCompare() async {
+    _compareIds = await _prefsRepository.loadCompare();
+  }
+
   @override
   void dispose() {
     _debounce?.cancel();
-    scrollController.dispose();
     _filtersController.removeListener(_handleFiltersChanged);
     _favoritesController.removeListener(_handleFavoritesChanged);
     super.dispose();

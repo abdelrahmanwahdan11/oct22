@@ -8,6 +8,7 @@ import '../../core/localization/app_localizations.dart';
 import '../../core/providers/notifier_provider.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/animations.dart';
+import '../../data/mock/app_content.dart';
 import '../../data/models/property.dart';
 import '../../widgets/components/bottom_action_bar.dart';
 import '../../widgets/components/property_card.dart';
@@ -196,6 +197,111 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
                   onInterestChanged: (value) => setState(() => _interest = value),
                   onTermChanged: (value) => setState(() => _term = value),
                 ).fadeMove(delay: 260),
+                const SizedBox(height: 24),
+                FilledButton.icon(
+                  onPressed: () async {
+                    await controller.toggleCompare(property.id);
+                    if (!mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(controller.isInCompare(property.id)
+                            ? strings.t('compare_added')
+                            : strings.t('compare_removed')),
+                      ),
+                    );
+                    setState(() {});
+                  },
+                  icon: const FaIcon(FontAwesomeIcons.scaleBalanced, size: 16),
+                  label: Text(controller.isInCompare(property.id)
+                      ? strings.t('remove_from_compare')
+                      : strings.t('add_to_compare')),
+                ).fadeMove(delay: 280),
+                const SizedBox(height: 20),
+                Text(strings.t('feature_badges'),
+                        style: Theme.of(context)
+                            .textTheme
+                            .titleMedium
+                            ?.copyWith(fontWeight: FontWeight.w600))
+                    .fadeMove(delay: 300),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    for (final badge in AppContent.propertyBadges)
+                      Chip(
+                        avatar: const FaIcon(FontAwesomeIcons.check, size: 14),
+                        label: Text(AppContent.localizedText(
+                            (badge['title'] as Map<String, String>), strings.languageCode)),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                Text(strings.t('investment_highlights'),
+                        style: Theme.of(context)
+                            .textTheme
+                            .titleMedium
+                            ?.copyWith(fontWeight: FontWeight.w600))
+                    .fadeMove(delay: 320),
+                const SizedBox(height: 8),
+                Column(
+                  children: [
+                    for (final highlight in AppContent.investmentHighlights)
+                      ListTile(
+                        leading: const FaIcon(FontAwesomeIcons.chartPie, size: 16),
+                        title: Text(AppContent.localizedText(
+                            (highlight['title'] as Map<String, String>), strings.languageCode)),
+                        subtitle: Text(AppContent.localizedText(
+                            (highlight['body'] as Map<String, String>), strings.languageCode)),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                Text(strings.t('download_documents'),
+                        style: Theme.of(context)
+                            .textTheme
+                            .titleMedium
+                            ?.copyWith(fontWeight: FontWeight.w600))
+                    .fadeMove(delay: 340),
+                const SizedBox(height: 8),
+                Column(
+                  children: [
+                    for (final doc in AppContent.propertyDocuments)
+                      ListTile(
+                        leading: FaIcon(
+                          _DocIcons.map[doc['icon']] ?? FontAwesomeIcons.file,
+                          size: 16,
+                        ),
+                        title: Text(AppContent.localizedText(
+                            (doc['title'] as Map<String, String>), strings.languageCode)),
+                        trailing: TextButton(
+                          onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text(strings.t('document_downloading'))),
+                          ),
+                          child: Text(strings.t('download')),
+                        ),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                Text(strings.t('nearby_services'),
+                        style: Theme.of(context)
+                            .textTheme
+                            .titleMedium
+                            ?.copyWith(fontWeight: FontWeight.w600))
+                    .fadeMove(delay: 360),
+                const SizedBox(height: 8),
+                Column(
+                  children: [
+                    for (final service in AppContent.nearbyServices)
+                      ListTile(
+                        leading: const FaIcon(FontAwesomeIcons.locationDot, size: 16),
+                        title: Text(AppContent.localizedText(
+                            (service['title'] as Map<String, String>), strings.languageCode)),
+                        trailing: Text(service['distance'] as String),
+                      ),
+                  ],
+                ),
                 const SizedBox(height: 24),
                 Text(
                   strings.t('property_timeline'),
@@ -398,6 +504,14 @@ class _SliderTile extends StatelessWidget {
       ],
     );
   }
+}
+
+class _DocIcons {
+  static const Map<String, IconData> map = {
+    'file-lines': FontAwesomeIcons.fileLines,
+    'file-shield': FontAwesomeIcons.fileShield,
+    'book': FontAwesomeIcons.book,
+  };
 }
 
 class _TimelineItem extends StatelessWidget {

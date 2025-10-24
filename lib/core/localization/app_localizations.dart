@@ -31,6 +31,8 @@ class AppLocalizations {
   String t(String key) => _strings[key] ?? key;
 
   bool get isRtl => locale.languageCode == 'ar';
+
+  String get languageCode => locale.languageCode;
 }
 
 class AppLocalizationsDelegate
