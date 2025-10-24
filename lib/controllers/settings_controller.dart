@@ -1,51 +1,73 @@
 import 'package:flutter/material.dart';
 
-import '../repositories/settings_repository.dart';
+import '../core/localization/app_localizations.dart';
+import '../data/repositories/prefs_repository.dart';
 
 class SettingsController extends ChangeNotifier {
-  SettingsController(this._repository);
+  SettingsController(this._prefsRepository);
 
-  final SettingsRepository _repository;
+  final PrefsRepository _prefsRepository;
 
-  ThemeSetting _theme = ThemeSetting.light;
-  Locale _locale = const Locale('en');
-  UnitSystem _unitSystem = UnitSystem.imperial;
-  bool _loaded = false;
+  ThemeMode _themeMode = ThemeMode.system;
+  Locale _locale = AppLocalizations.defaultLocale;
+  bool _onboardingComplete = false;
 
-  ThemeSetting get theme => _theme;
+  ThemeMode get themeMode => _themeMode;
   Locale get locale => _locale;
-  UnitSystem get unitSystem => _unitSystem;
-  bool get isLoaded => _loaded;
-
-  ThemeMode get themeMode =>
-      _theme == ThemeSetting.dark ? ThemeMode.dark : ThemeMode.light;
-
-  bool get isDark => _theme == ThemeSetting.dark;
+  bool get isDarkMode => _themeMode == ThemeMode.dark;
+  bool get onboardingComplete => _onboardingComplete;
 
   Future<void> load() async {
-    final data = await _repository.load();
-    _theme = data.theme;
-    _locale = data.locale;
-    _unitSystem = data.unitSystem;
-    _loaded = true;
+    final theme = await _prefsRepository.loadThemeMode();
+    final localeCode = await _prefsRepository.loadLocale();
+    _onboardingComplete = await _prefsRepository.isOnboardingDone();
+
+    if (theme != null) {
+      _themeMode = theme == 'dark'
+          ? ThemeMode.dark
+          : theme == 'light'
+              ? ThemeMode.light
+              : ThemeMode.system;
+    }
+    if (localeCode != null) {
+      _locale = Locale(localeCode);
+    }
     notifyListeners();
   }
 
-  Future<void> toggleDarkMode(bool value) async {
-    _theme = value ? ThemeSetting.dark : ThemeSetting.light;
-    await _repository.saveTheme(_theme);
+  Future<void> setThemeMode(ThemeMode mode) async {
+    _themeMode = mode;
+    await _prefsRepository.saveThemeMode(
+      mode == ThemeMode.dark
+          ? 'dark'
+          : mode == ThemeMode.light
+              ? 'light'
+              : 'system',
+    );
     notifyListeners();
+  }
+
+  Future<void> toggleDarkMode(bool enabled) async {
+    await setThemeMode(enabled ? ThemeMode.dark : ThemeMode.light);
   }
 
   Future<void> setLocale(Locale locale) async {
     _locale = locale;
-    await _repository.saveLocale(locale);
+    await _prefsRepository.saveLocale(locale.languageCode);
     notifyListeners();
   }
 
-  Future<void> setUnitSystem(UnitSystem system) async {
-    _unitSystem = system;
-    await _repository.saveUnitSystem(system);
+  Future<void> completeOnboarding() async {
+    _onboardingComplete = true;
+    await _prefsRepository.setOnboardingDone();
+    notifyListeners();
+  }
+
+  Future<void> clear() async {
+    await _prefsRepository.clear();
+    _themeMode = ThemeMode.system;
+    _locale = AppLocalizations.defaultLocale;
+    _onboardingComplete = false;
     notifyListeners();
   }
 }
