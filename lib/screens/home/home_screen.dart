@@ -223,6 +223,36 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               SliverToBoxAdapter(
+                child: _HomeFeatureCluster(
+                  padding: horizontalPadding,
+                  title: strings.t('home_concierge_title'),
+                  subtitle: strings.t('home_concierge_caption'),
+                  items: AppContent.homeConciergePrograms,
+                  languageCode: languageCode,
+                  dark: settings.isDarkMode,
+                ),
+              ),
+              SliverToBoxAdapter(
+                child: _HomeFeatureCluster(
+                  padding: horizontalPadding,
+                  title: strings.t('home_intelligence_title'),
+                  subtitle: strings.t('home_intelligence_caption'),
+                  items: AppContent.homeIntelligenceTiles,
+                  languageCode: languageCode,
+                  dark: settings.isDarkMode,
+                ),
+              ),
+              SliverToBoxAdapter(
+                child: _HomeFeatureCluster(
+                  padding: horizontalPadding,
+                  title: strings.t('home_lifestyle_title'),
+                  subtitle: strings.t('home_lifestyle_caption'),
+                  items: AppContent.homeLifestyleBoosters,
+                  languageCode: languageCode,
+                  dark: settings.isDarkMode,
+                ),
+              ),
+              SliverToBoxAdapter(
                 child: Padding(
                   padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
                   child: PillTabs(
@@ -1265,6 +1295,169 @@ class _FeatureHighlightTile extends StatelessWidget {
   }
 }
 
+class _HomeFeatureCluster extends StatelessWidget {
+  const _HomeFeatureCluster({
+    required this.padding,
+    required this.title,
+    required this.subtitle,
+    required this.items,
+    required this.languageCode,
+    required this.dark,
+  });
+
+  final double padding;
+  final String title;
+  final String subtitle;
+  final List<Map<String, dynamic>> items;
+  final String languageCode;
+  final bool dark;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: EdgeInsets.fromLTRB(padding, 12, padding, 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+          ).fadeMove(),
+          const SizedBox(height: 4),
+          Text(
+            subtitle,
+            style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.textTheme.bodyMedium?.color?.withOpacity(0.72),
+                ),
+          ).fadeMove(delay: 40),
+          const SizedBox(height: 16),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final maxWidth = constraints.maxWidth;
+              final double tileWidth;
+              if (maxWidth >= 1200) {
+                tileWidth = (maxWidth - 48) / 3;
+              } else if (maxWidth >= 800) {
+                tileWidth = (maxWidth - 24) / 2;
+              } else {
+                tileWidth = maxWidth;
+              }
+              return Wrap(
+                spacing: 12,
+                runSpacing: 12,
+                children: [
+                  for (var i = 0; i < items.length; i++)
+                    SizedBox(
+                      width: tileWidth,
+                      child: _CompactFeatureCard(
+                        icon: AppIcons.map[(items[i]['icon'] as String?) ?? ''] ??
+                            FontAwesomeIcons.circleDot,
+                        title: AppContent.localizedText(
+                          (items[i]['title'] as Map<String, String>),
+                          languageCode,
+                        ),
+                        body: AppContent.localizedText(
+                          (items[i]['body'] as Map<String, String>),
+                          languageCode,
+                        ),
+                        dark: dark,
+                        index: i,
+                      ),
+                    ),
+                ],
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CompactFeatureCard extends StatelessWidget {
+  const _CompactFeatureCard({
+    required this.icon,
+    required this.title,
+    required this.body,
+    required this.dark,
+    required this.index,
+  });
+
+  final IconData icon;
+  final String title;
+  final String body;
+  final bool dark;
+  final int index;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final bubbleColor = dark ? const Color(0xFF2A2F36) : Colors.white;
+    final textColor =
+        theme.textTheme.bodySmall?.color?.withOpacity(dark ? 0.75 : 0.7);
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(24),
+        onTap: () {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content:
+                  Text(AppLocalizations.of(context).t('feature_capture_toast')),
+            ),
+          );
+        },
+        child: Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: dark ? const Color(0xFF14171C) : const Color(0xFFF7F7F9),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: dark ? const Color(0xFF2A2F36) : const Color(0xFFE7E9EF),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(dark ? 0.14 : 0.06),
+                blurRadius: 18,
+                offset: const Offset(0, 12),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: bubbleColor,
+                  borderRadius: BorderRadius.circular(18),
+                ),
+                child: FaIcon(
+                  icon,
+                  size: 18,
+                  color: theme.colorScheme.primary,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                title,
+                style:
+                    theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                body,
+                style: theme.textTheme.bodySmall?.copyWith(color: textColor),
+              ),
+            ],
+          ),
+        ),
+      ),
+    ).fadeMove(delay: index * 20);
+  }
+}
+
 class AppIcons {
   static const Map<String, IconData> map = {
     'wand-magic-sparkles': FontAwesomeIcons.wandMagicSparkles,
@@ -1301,10 +1494,30 @@ class AppIcons {
     'square-parking': FontAwesomeIcons.squareParking,
     'boxes-stacked': FontAwesomeIcons.boxesStacked,
     'shield-heart': FontAwesomeIcons.shieldHeart,
+    'shield-halved': FontAwesomeIcons.shieldHalved,
     'file-invoice': FontAwesomeIcons.fileInvoice,
     'water': FontAwesomeIcons.water,
     'chart-line': FontAwesomeIcons.chartLine,
     'list-check': FontAwesomeIcons.listCheck,
     'user-shield': FontAwesomeIcons.userShield,
+    'headset': FontAwesomeIcons.headset,
+    'map-location-dot': FontAwesomeIcons.mapLocationDot,
+    'clipboard-list': FontAwesomeIcons.clipboardList,
+    'magnifying-glass-location': FontAwesomeIcons.magnifyingGlassLocation,
+    'layer-group': FontAwesomeIcons.layerGroup,
+    'chart-pie': FontAwesomeIcons.chartPie,
+    'clock-rotate-left': FontAwesomeIcons.clockRotateLeft,
+    'satellite-dish': FontAwesomeIcons.satelliteDish,
+    'table-list': FontAwesomeIcons.tableList,
+    'gauge-high': FontAwesomeIcons.gaugeHigh,
+    'cloud-sun': FontAwesomeIcons.cloudSun,
+    'dumbbell': FontAwesomeIcons.dumbbell,
+    'mug-hot': FontAwesomeIcons.mugHot,
+    'seedling': FontAwesomeIcons.seedling,
+    'person-hiking': FontAwesomeIcons.personHiking,
+    'music': FontAwesomeIcons.music,
+    'utensils': FontAwesomeIcons.utensils,
+    'children': FontAwesomeIcons.children,
+    'bicycle': FontAwesomeIcons.bicycle,
   };
 }

@@ -19,6 +19,8 @@ class PropertiesController extends ChangeNotifier {
   ) {
     _filtersController.addListener(_handleFiltersChanged);
     _favoritesController.addListener(_handleFavoritesChanged);
+    _seedFallbacks();
+    _rebuildRecommendations();
   }
 
   final PropertiesRepository _propertiesRepository;
@@ -69,28 +71,41 @@ class PropertiesController extends ChangeNotifier {
     if (_loading || _initialized) return;
     _loading = true;
     notifyListeners();
-    await Future.wait([
-      _loadFeatured(),
-      _loadExplore(),
-      _loadFeed(reset: true),
-    ]);
-    await _loadRecentSearches();
-    await _loadRecentViews();
-    await _loadCompare();
-    _rebuildRecommendations();
-    _initialized = true;
-    _loading = false;
-    notifyListeners();
+    try {
+      await Future.wait([
+        _loadFeatured(),
+        _loadExplore(),
+        _loadFeed(reset: true),
+      ]);
+      await _loadRecentSearches();
+      await _loadRecentViews();
+      await _loadCompare();
+    } catch (_) {
+      _seedFallbacks();
+    } finally {
+      _rebuildRecommendations();
+      _initialized = true;
+      _loading = false;
+      notifyListeners();
+    }
   }
 
   Future<void> refresh() async {
     _page = 1;
     _hasMore = true;
-    await _loadFeed(reset: true);
-    await _loadFeatured();
-    await _loadExplore();
-    _rebuildRecommendations();
+    _loading = true;
     notifyListeners();
+    try {
+      await _loadFeed(reset: true);
+      await _loadFeatured();
+      await _loadExplore();
+    } catch (_) {
+      _seedFallbacks();
+    } finally {
+      _rebuildRecommendations();
+      _loading = false;
+      notifyListeners();
+    }
   }
 
   Future<void> loadMore() async {
@@ -113,12 +128,20 @@ class PropertiesController extends ChangeNotifier {
   void setSearchQuery(String query) {
     _searchQuery = query;
     _debounce?.cancel();
+    _loading = true;
+    notifyListeners();
     _debounce = Timer(const Duration(milliseconds: 350), () async {
-      _page = 1;
-      _hasMore = true;
-      await _loadFeed(reset: true);
-      _rebuildRecommendations();
-      notifyListeners();
+      try {
+        _page = 1;
+        _hasMore = true;
+        await _loadFeed(reset: true);
+      } catch (_) {
+        _seedFallbacks();
+      } finally {
+        _rebuildRecommendations();
+        _loading = false;
+        notifyListeners();
+      }
     });
   }
 
@@ -295,6 +318,13 @@ class PropertiesController extends ChangeNotifier {
     _feed = _mapFavorites(_feed);
     _rebuildRecommendations();
     notifyListeners();
+  }
+
+  void _seedFallbacks() {
+    _featured = _mapFavorites(_fallbackFeatured());
+    _explore = _mapFavorites(_fallbackExplore());
+    _feed = _mapFavorites(_fallbackFeed());
+    _hasMore = _feed.length < _propertiesRepository.all().length;
   }
 
   Future<void> _loadRecentSearches() async {

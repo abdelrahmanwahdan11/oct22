@@ -274,6 +274,345 @@ class AppContent {
     },
   ];
 
+  static const homeConciergePrograms = [
+    {
+      'icon': 'truck-fast',
+      'title': {
+        'en': 'Move concierge team',
+        'ar': 'فريق كونسيرج الانتقال',
+      },
+      'body': {
+        'en': 'Door-to-door movers, packing, and cleaning orchestrated for you.',
+        'ar': 'فريق نقل متكامل يتولى التغليف والتنظيف من الباب إلى الباب.',
+      },
+    },
+    {
+      'icon': 'calendar-check',
+      'title': {
+        'en': 'Utility activations',
+        'ar': 'تفعيل الخدمات',
+      },
+      'body': {
+        'en': 'Schedule water, power, and internet in a single tap.',
+        'ar': 'جدولة الماء والكهرباء والإنترنت بلمسة واحدة.',
+      },
+    },
+    {
+      'icon': 'people-roof',
+      'title': {
+        'en': 'Co-living match',
+        'ar': 'مطابقة السكن المشترك',
+      },
+      'body': {
+        'en': 'Find vetted roommates and shared living agreements instantly.',
+        'ar': 'اعثر على شركاء سكن موثوقين واتفاقيات مشتركة فوراً.',
+      },
+    },
+    {
+      'icon': 'shield-heart',
+      'title': {
+        'en': 'Insurance review',
+        'ar': 'مراجعة التأمين',
+      },
+      'body': {
+        'en': 'Compare policies with in-app advisors before you sign.',
+        'ar': 'قارن وثائق التأمين مع مستشارين داخل التطبيق قبل التوقيع.',
+      },
+    },
+    {
+      'icon': 'file-invoice',
+      'title': {
+        'en': 'Document locker',
+        'ar': 'خزنة المستندات',
+      },
+      'body': {
+        'en': 'Store IDs, contracts, and receipts with biometric security.',
+        'ar': 'خزّن الهويات والعقود والفواتير بحماية بيومترية.',
+      },
+    },
+    {
+      'icon': 'headset',
+      'title': {
+        'en': 'Support hotline',
+        'ar': 'خط دعم مباشر',
+      },
+      'body': {
+        'en': '24/7 Arabic & English concierge ready to resolve tasks.',
+        'ar': 'دعم كونسيرج عربي وإنجليزي على مدار الساعة لحل المهام.',
+      },
+    },
+    {
+      'icon': 'map-location-dot',
+      'title': {
+        'en': 'Visit logistics',
+        'ar': 'تنسيق الزيارات',
+      },
+      'body': {
+        'en': 'Arrange drivers, parking, and access codes automatically.',
+        'ar': 'تنسيق السائقين والمواقف وأكواد الدخول تلقائياً.',
+      },
+    },
+    {
+      'icon': 'clipboard-list',
+      'title': {
+        'en': 'Move checklist',
+        'ar': 'قائمة الانتقال',
+      },
+      'body': {
+        'en': 'Personalized countdown with reminders for every milestone.',
+        'ar': 'جدول زمني مخصص مع تذكيرات لكل مرحلة انتقال.',
+      },
+    },
+    {
+      'icon': 'user-shield',
+      'title': {
+        'en': 'Safe deal escrow',
+        'ar': 'حماية الدفعات',
+      },
+      'body': {
+        'en': 'Hold deposits securely until the property handover completes.',
+        'ar': 'احتفظ بالدفعات بأمان حتى اكتمال استلام العقار.',
+      },
+    },
+    {
+      'icon': 'house-laptop',
+      'title': {
+        'en': 'Remote closing',
+        'ar': 'إغلاق عن بُعد',
+      },
+      'body': {
+        'en': 'Finalize paperwork digitally with notarized signatures.',
+        'ar': 'أكمل الأوراق رقمياً مع توقيعات موثّقة.',
+      },
+    },
+  ];
+
+  static const homeIntelligenceTiles = [
+    {
+      'icon': 'chart-line',
+      'title': {
+        'en': 'Market radar',
+        'ar': 'رادار السوق',
+      },
+      'body': {
+        'en': 'Benchmark prices, absorption, and rent yields in real time.',
+        'ar': 'قارن الأسعار ووتيرة البيع وعوائد الإيجار مباشرة.',
+      },
+    },
+    {
+      'icon': 'magnifying-glass-location',
+      'title': {
+        'en': 'Geo search heatmap',
+        'ar': 'خريطة حرارة البحث',
+      },
+      'body': {
+        'en': 'See live demand hotspots while you browse the map.',
+        'ar': 'شاهد مناطق الطلب الساخنة أثناء تصفح الخريطة.',
+      },
+    },
+    {
+      'icon': 'layer-group',
+      'title': {
+        'en': 'Portfolio mixer',
+        'ar': 'منسق المحفظة',
+      },
+      'body': {
+        'en': 'Blend residential and commercial assets with guided ratios.',
+        'ar': 'امزج الأصول السكنية والتجارية بنسب موجهة.',
+      },
+    },
+    {
+      'icon': 'chart-pie',
+      'title': {
+        'en': 'Equity forecast',
+        'ar': 'توقع الأسهم',
+      },
+      'body': {
+        'en': 'Project appreciation scenarios across multiple timelines.',
+        'ar': 'توقع سيناريوهات ارتفاع القيمة عبر جداول زمنية متعددة.',
+      },
+    },
+    {
+      'icon': 'clock-rotate-left',
+      'title': {
+        'en': 'History replay',
+        'ar': 'إعادة التاريخ',
+      },
+      'body': {
+        'en': 'Rewind renovation, pricing, and ownership changes instantly.',
+        'ar': 'أعد عرض التعديلات والأسعار وتغيرات الملكية فوراً.',
+      },
+    },
+    {
+      'icon': 'satellite-dish',
+      'title': {
+        'en': 'Signal alerts',
+        'ar': 'تنبيهات الإشارات',
+      },
+      'body': {
+        'en': 'Subscribe to permit filings, zoning, and infrastructure news.',
+        'ar': 'اشترك في تنبيهات الرخص والتنظيمات وأخبار البنية التحتية.',
+      },
+    },
+    {
+      'icon': 'table-list',
+      'title': {
+        'en': 'Smart tables',
+        'ar': 'جداول ذكية',
+      },
+      'body': {
+        'en': 'Export ready comparison tables with one tap.',
+        'ar': 'صدر جداول مقارنة جاهزة بلمسة واحدة.',
+      },
+    },
+    {
+      'icon': 'gauge-high',
+      'title': {
+        'en': 'Risk dashboard',
+        'ar': 'لوحة المخاطر',
+      },
+      'body': {
+        'en': 'Monitor credit, vacancy, and liquidity indicators.',
+        'ar': 'راقب مؤشرات الائتمان والشواغر والسيولة.',
+      },
+    },
+    {
+      'icon': 'cloud-sun',
+      'title': {
+        'en': 'Climate lens',
+        'ar': 'عدسة المناخ',
+      },
+      'body': {
+        'en': 'Overlay sun paths, breeze, and temperature comfort scores.',
+        'ar': 'اعرض مسارات الشمس والنسيم ومؤشر الراحة الحرارية.',
+      },
+    },
+    {
+      'icon': 'wand-magic-sparkles',
+      'title': {
+        'en': 'Scenario studio',
+        'ar': 'استوديو السيناريوهات',
+      },
+      'body': {
+        'en': 'Simulate upgrades, financing, and staging outcomes instantly.',
+        'ar': 'حاكِ نتائج التطويرات والتمويل والعرض خلال ثوانٍ.',
+      },
+    },
+  ];
+
+  static const homeLifestyleBoosters = [
+    {
+      'icon': 'spa',
+      'title': {
+        'en': 'Wellness calendar',
+        'ar': 'تقويم العافية',
+      },
+      'body': {
+        'en': 'Sync yoga, spa, and mindfulness events near every listing.',
+        'ar': 'زامن فعاليات اليوغا والسبا والتأمل القريبة من كل عقار.',
+      },
+    },
+    {
+      'icon': 'dumbbell',
+      'title': {
+        'en': 'Fitness roster',
+        'ar': 'جدول اللياقة',
+      },
+      'body': {
+        'en': 'Preferred gyms with membership perks and PT credits.',
+        'ar': 'أندية رياضية مفضلة مع مزايا اشتراك واعتمادات تدريب شخصي.',
+      },
+    },
+    {
+      'icon': 'mug-hot',
+      'title': {
+        'en': 'Coffee map',
+        'ar': 'خريطة المقاهي',
+      },
+      'body': {
+        'en': 'Discover specialty cafés and remote work lounges.',
+        'ar': 'اكتشف المقاهي المختصة وصالات العمل عن بعد.',
+      },
+    },
+    {
+      'icon': 'seedling',
+      'title': {
+        'en': 'Green escapes',
+        'ar': 'ملاذات خضراء',
+      },
+      'body': {
+        'en': 'Map rooftop gardens, farmers markets, and compost hubs.',
+        'ar': 'حدد حدائق الأسطح والأسواق الزراعية ونقاط التدوير.',
+      },
+    },
+    {
+      'icon': 'person-hiking',
+      'title': {
+        'en': 'Trail tracker',
+        'ar': 'متتبع المسارات',
+      },
+      'body': {
+        'en': 'Weekend trails with travel time and difficulty tags.',
+        'ar': 'مسارات عطلة نهاية الأسبوع مع زمن الوصول ومستوى الصعوبة.',
+      },
+    },
+    {
+      'icon': 'music',
+      'title': {
+        'en': 'Music nights',
+        'ar': 'أمسيات موسيقية',
+      },
+      'body': {
+        'en': 'Curated concerts and cultural nights for every district.',
+        'ar': 'أمسيات موسيقية وثقافية مختارة لكل حي.',
+      },
+    },
+    {
+      'icon': 'utensils',
+      'title': {
+        'en': 'Chef collective',
+        'ar': 'تجمع الطهاة',
+      },
+      'body': {
+        'en': 'Chef-hosted pop-ups and private dining experiences.',
+        'ar': 'مطابخ مؤقتة وتجارب طهي خاصة بإشراف الطهاة.',
+      },
+    },
+    {
+      'icon': 'children',
+      'title': {
+        'en': 'Kids clubs',
+        'ar': 'أندية الأطفال',
+      },
+      'body': {
+        'en': 'After-school programs, camps, and bilingual tutors.',
+        'ar': 'برامج ما بعد المدرسة ومعسكرات ومدرسون ثنائيو اللغة.',
+      },
+    },
+    {
+      'icon': 'bicycle',
+      'title': {
+        'en': 'Cycle lanes',
+        'ar': 'مسارات الدراجات',
+      },
+      'body': {
+        'en': 'Protected bike paths with repair kiosks and rentals.',
+        'ar': 'مسارات دراجات محمية مع نقاط صيانة وتأجير.',
+      },
+    },
+    {
+      'icon': 'water',
+      'title': {
+        'en': 'Water rituals',
+        'ar': 'طقوس مائية',
+      },
+      'body': {
+        'en': 'Spa pools, hydrotherapy, and beachfront club access.',
+        'ar': 'مسابح السبا والعلاج المائي والدخول إلى النوادي البحرية.',
+      },
+    },
+  ];
+
   static const virtualTours = [
     {
       'title': 'Skyline Penthouse Tour',
