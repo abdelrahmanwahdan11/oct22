@@ -61,10 +61,10 @@ class MarketController extends ChangeNotifier {
   }
 
   Future<void> refresh() async {
-    _topPage = 0;
+    _resetTopPagination();
     _activePage = 0;
-    _hasMoreTop = true;
     _hasMoreActive = true;
+    _searchDebounce?.cancel();
     await Future.wait([
       _loadTop(reset: true),
       _loadTrending(),
@@ -107,20 +107,27 @@ class MarketController extends ChangeNotifier {
   }
 
   void setSearchQuery(String value) {
-    _searchQuery = value;
+    final normalized = value.trim();
+    if (_searchQuery == normalized) return;
+    _searchQuery = normalized;
+    _resetTopPagination();
+    _top.clear();
+    _loadingTop = true;
+    notifyListeners();
     _searchDebounce?.cancel();
     _searchDebounce = Timer(const Duration(milliseconds: 350), () async {
-      _topPage = 0;
-      _hasMoreTop = true;
-      await _loadTop(reset: true);
+      await _loadTop(reset: true, force: true);
     });
   }
 
   Future<void> setTypeFilter(String? type) async {
+    if (_typeFilter == type) return;
     _typeFilter = type;
-    _topPage = 0;
-    _hasMoreTop = true;
-    await _loadTop(reset: true);
+    _resetTopPagination();
+    _top.clear();
+    _loadingTop = true;
+    notifyListeners();
+    await _loadTop(reset: true, force: true);
   }
 
   bool isWatched(String id) => _watchlist.contains(id);
@@ -158,8 +165,8 @@ class MarketController extends ChangeNotifier {
     if (changed) notifyListeners();
   }
 
-  Future<void> _loadTop({bool reset = false}) async {
-    if (_loadingTop) return;
+  Future<void> _loadTop({bool reset = false, bool force = false}) async {
+    if (_loadingTop && !force) return;
     _loadingTop = true;
     if (reset) {
       _top.clear();
@@ -180,6 +187,11 @@ class MarketController extends ChangeNotifier {
     _hasMoreTop = page.length == marketRepository.pageSize;
     _loadingTop = false;
     notifyListeners();
+  }
+
+  void _resetTopPagination() {
+    _topPage = 0;
+    _hasMoreTop = true;
   }
 
   Future<void> _loadTrending() async {

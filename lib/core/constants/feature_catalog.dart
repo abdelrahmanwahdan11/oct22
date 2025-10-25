@@ -178,4 +178,84 @@ const List<FeatureDescriptor> kProTradingFeatures = [
     title: 'Smart Watchlists',
     subtitle: 'Auto-group assets by volatility or sector.',
   ),
+  FeatureDescriptor(
+    icon: FontAwesomeIcons.squarePollVertical,
+    title: 'Risk Budget Matrix',
+    subtitle: 'Balance exposure targets across strategies instantly.',
+  ),
+  FeatureDescriptor(
+    icon: FontAwesomeIcons.waveSquare,
+    title: 'Options Greeks Studio',
+    subtitle: 'Visualize delta, gamma and theta decay in real time.',
+  ),
+  FeatureDescriptor(
+    icon: FontAwesomeIcons.rotateRight,
+    title: 'Cross-Asset Replay',
+    subtitle: 'Scrub synchronized charts for equities, crypto and FX.',
+  ),
+  FeatureDescriptor(
+    icon: FontAwesomeIcons.earthEurope,
+    title: 'AI Macro Narratives',
+    subtitle: 'Summarize global catalysts into daily trading theses.',
+  ),
+  FeatureDescriptor(
+    icon: FontAwesomeIcons.flask,
+    title: 'Strategy Backtester',
+    subtitle: 'Run walk-forward tests with one tap and compare KPIs.',
+  ),
+  FeatureDescriptor(
+    icon: FontAwesomeIcons.diagramProject,
+    title: 'Microstructure Map',
+    subtitle: 'Reveal venue depth and queue imbalance at a glance.',
+  ),
+  FeatureDescriptor(
+    icon: FontAwesomeIcons.arrowRightArrowLeft,
+    title: 'Capital Flows Tracker',
+    subtitle: 'Monitor ETF creations and cross-border rotations.',
+  ),
+  FeatureDescriptor(
+    icon: FontAwesomeIcons.chessKnight,
+    title: 'Regime Classifier',
+    subtitle: 'Label bull, bear or chop conditions using AI clustering.',
+  ),
+  FeatureDescriptor(
+    icon: FontAwesomeIcons.triangleExclamation,
+    title: 'Risk Alerts Engine',
+    subtitle: 'Escalate margin or VaR breaches with playbook guidance.',
+  ),
+  FeatureDescriptor(
+    icon: FontAwesomeIcons.gaugeSimpleHigh,
+    title: 'Sentiment Heat Dials',
+    subtitle: 'Blend crowd and analyst tone into actionable gauges.',
+  ),
+  FeatureDescriptor(
+    icon: FontAwesomeIcons.bookOpen,
+    title: 'Notebook Sync',
+    subtitle: 'Sync trading journals and whiteboards across devices.',
+  ),
+  FeatureDescriptor(
+    icon: FontAwesomeIcons.rulerCombined,
+    title: 'Auto Position Sizing',
+    subtitle: 'Calibrate quantity per trade with Kelly overlays.',
+  ),
+  FeatureDescriptor(
+    icon: FontAwesomeIcons.commentDots,
+    title: 'AI Coach Chat',
+    subtitle: 'Debrief trades and get adaptive coaching suggestions.',
+  ),
+  FeatureDescriptor(
+    icon: FontAwesomeIcons.filter,
+    title: 'Screener Builder',
+    subtitle: 'Stack fundamental and technical filters dynamically.',
+  ),
+  FeatureDescriptor(
+    icon: FontAwesomeIcons.clone,
+    title: 'Playbook Templates',
+    subtitle: 'Deploy ready-made trading workflows with guardrails.',
+  ),
+  FeatureDescriptor(
+    icon: FontAwesomeIcons.microphoneLines,
+    title: 'Voice Command Center',
+    subtitle: 'Control orders and layouts hands-free via voice.',
+  ),
 ];

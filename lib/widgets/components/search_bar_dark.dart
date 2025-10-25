@@ -27,46 +27,45 @@ class SearchBarDark extends StatelessWidget {
     final colors = TradeXTheme.colorsOf(context);
     return AnimatedReveal(
       child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
         decoration: BoxDecoration(
           color: colors.surfaceSoft,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: colors.border),
         ),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      child: Row(
-        children: [
-          FaIcon(FontAwesomeIcons.magnifyingGlass, color: colors.muted, size: 18),
-          const SizedBox(width: 12),
-          Expanded(
-            child: TextField(
-              controller: controller,
-              focusNode: focusNode,
-              onChanged: onChanged,
-              style: Theme.of(context).textTheme.bodyMedium,
-              decoration: InputDecoration(
-                isCollapsed: true,
-                border: InputBorder.none,
-                hintText: hintText,
-                hintStyle: Theme.of(context)
-                    .textTheme
-                    .bodyMedium
-                    ?.copyWith(color: colors.textSecondary),
+        child: Row(
+          children: [
+            FaIcon(FontAwesomeIcons.magnifyingGlass, color: colors.muted, size: 18),
+            const SizedBox(width: 12),
+            Expanded(
+              child: TextField(
+                controller: controller,
+                focusNode: focusNode,
+                onChanged: onChanged,
+                style: Theme.of(context).textTheme.bodyMedium,
+                decoration: InputDecoration(
+                  isCollapsed: true,
+                  border: InputBorder.none,
+                  hintText: hintText,
+                  hintStyle: Theme.of(context)
+                      .textTheme
+                      .bodyMedium
+                      ?.copyWith(color: colors.textSecondary),
+                ),
               ),
             ),
-          ),
-          if (onFilters != null) ...[
-            IconButton(
-              icon: FaIcon(FontAwesomeIcons.sliders, color: colors.muted, size: 18),
-              onPressed: onFilters,
-            ),
+            if (onFilters != null)
+              IconButton(
+                icon: FaIcon(FontAwesomeIcons.sliders, color: colors.muted, size: 18),
+                onPressed: onFilters,
+              ),
+            if (onMic != null)
+              IconButton(
+                icon: FaIcon(FontAwesomeIcons.microphone, color: colors.muted, size: 18),
+                onPressed: onMic,
+              ),
           ],
-          if (onMic != null) ...[
-            IconButton(
-              icon: FaIcon(FontAwesomeIcons.microphone, color: colors.muted, size: 18),
-              onPressed: onMic,
-            ),
-          ],
-        ],
+        ),
       ),
     );
   }
