@@ -44,6 +44,48 @@ class AccountScreen extends StatelessWidget {
             secondary: const FaIcon(FontAwesomeIcons.moon),
             onChanged: (value) => settings.toggleDarkMode(value),
           ),
+          SwitchListTile.adaptive(
+            value: settings.proMode,
+            title: Text(strings.t('pro_mode_workspace')),
+            secondary: const FaIcon(FontAwesomeIcons.userTie),
+            onChanged: (value) => settings.setProMode(value),
+          ),
+          SwitchListTile.adaptive(
+            value: settings.biometricEnabled,
+            title: Text(strings.t('biometric_lock')),
+            subtitle: Text(strings.t('biometric_lock_sub')),
+            secondary: const FaIcon(FontAwesomeIcons.fingerprint),
+            onChanged: (value) => settings.setBiometric(value),
+          ),
+          SwitchListTile.adaptive(
+            value: settings.highContrast,
+            title: Text(strings.t('high_contrast_charts')),
+            secondary: const FaIcon(FontAwesomeIcons.eye),
+            onChanged: (value) => settings.setHighContrast(value),
+          ),
+          SwitchListTile.adaptive(
+            value: settings.autoRefreshPortfolio,
+            title: Text(strings.t('auto_refresh_portfolio')),
+            subtitle: Text(strings.t('auto_refresh_portfolio_sub')),
+            secondary: const FaIcon(FontAwesomeIcons.rotate),
+            onChanged: (value) => settings.setAutoRefresh(value),
+          ),
+          const Divider(height: 32),
+          DropdownButtonFormField<String>(
+            value: settings.defaultCurrency,
+            decoration: InputDecoration(
+              labelText: strings.t('primary_currency'),
+              prefixIcon: const FaIcon(FontAwesomeIcons.coins, size: 18),
+            ),
+            items: const ['USD', 'EUR', 'AED', 'SAR', 'GBP']
+                .map((value) => DropdownMenuItem(value: value, child: Text(value)))
+                .toList(),
+            onChanged: (value) {
+              if (value != null) {
+                settings.setDefaultCurrency(value);
+              }
+            },
+          ),
           ListTile(
             leading: const FaIcon(FontAwesomeIcons.language),
             title: Text(strings.t('language')),

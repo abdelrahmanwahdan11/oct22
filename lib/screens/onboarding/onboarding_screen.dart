@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../controllers/settings_controller.dart';
 import '../../core/localization/app_localizations.dart';
 import '../../core/providers/controller_scope.dart';
+import '../../widgets/animations/animated_reveal.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -81,13 +81,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           style: Theme.of(context).textTheme.display?.copyWith(color: Colors.white),
                         ),
                         const SizedBox(height: 16),
-                        Text(
-                          page['title'] as String,
-                          style: Theme.of(context)
-                              .textTheme
-                              .h1
-                              .copyWith(color: Colors.white, fontWeight: FontWeight.w700),
-                        ).animate().fadeIn(500.ms).moveY(begin: 20, end: 0),
+                        AnimatedReveal(
+                          child: Text(
+                            page['title'] as String,
+                            style: Theme.of(context)
+                                .textTheme
+                                .h1
+                                .copyWith(color: Colors.white, fontWeight: FontWeight.w700),
+                          ),
+                        ),
                         const SizedBox(height: 16),
                         ...List<Widget>.from(
                           (page['bullets'] as List<String>).map(

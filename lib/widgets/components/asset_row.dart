@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/formatters.dart';
 import '../../data/models/asset.dart';
+import '../animations/animated_reveal.dart';
 
 class AssetRow extends StatelessWidget {
   const AssetRow({
@@ -27,13 +27,14 @@ class AssetRow extends StatelessWidget {
     final colors = TradeXTheme.colorsOf(context);
     final textTheme = Theme.of(context).textTheme;
     final changeColor = quote.changePct >= 0 ? colors.profit : colors.loss;
-    return InkWell(
-      borderRadius: BorderRadius.circular(18),
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
-        child: Row(
-          children: [
+    return AnimatedReveal(
+      child: InkWell(
+        borderRadius: BorderRadius.circular(18),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
+          child: Row(
+            children: [
             Hero(
               tag: 'asset_image_${asset.id}',
               child: ClipRRect(
@@ -72,7 +73,10 @@ class AssetRow extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  formatCurrency(quote.price),
+                  formatCurrency(
+                    quote.price,
+                    currency: asset.currency,
+                  ),
                   style: textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(height: 4),
@@ -109,6 +113,6 @@ class AssetRow extends StatelessWidget {
           ],
         ),
       ),
-    ).animate().fadeIn(280.ms).moveY(begin: 16, end: 0, curve: Curves.easeOut);
+    );
   }
 }

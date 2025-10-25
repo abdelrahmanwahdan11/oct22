@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/formatters.dart';
 import '../../data/models/portfolio.dart';
+import '../animations/animated_reveal.dart';
 
 class PositionRow extends StatelessWidget {
   const PositionRow({
@@ -23,16 +23,17 @@ class PositionRow extends StatelessWidget {
     final colors = TradeXTheme.colorsOf(context);
     final textTheme = Theme.of(context).textTheme;
     final pnlColor = position.isGain ? colors.profit : colors.loss;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
-      decoration: BoxDecoration(
-        color: colors.surface,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: colors.border),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+    return AnimatedReveal(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+        decoration: BoxDecoration(
+          color: colors.surface,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: colors.border),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
           Row(
             children: [
               CircleAvatar(
@@ -55,7 +56,12 @@ class PositionRow extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Text(formatCurrency(position.marketValue, compact: true),
+                  Text(
+                      formatCurrency(
+                        position.marketValue,
+                        compact: true,
+                        currency: position.currency,
+                      ),
                       style: textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w600)),
                   const SizedBox(height: 4),
                   Text(formatChangePct(position.pnlPct), style: textTheme.bodySmall?.copyWith(color: pnlColor)),
@@ -89,7 +95,7 @@ class PositionRow extends StatelessWidget {
           ),
         ],
       ),
-    ).animate(interval: 60.ms).fadeIn().scale(begin: 0.98, end: 1);
+    );
   }
 }
 

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../core/theme/app_theme.dart';
+import '../animations/animated_reveal.dart';
 
 class OrderKeypadSheet extends StatefulWidget {
   const OrderKeypadSheet({
@@ -60,9 +60,10 @@ class _OrderKeypadSheetState extends State<OrderKeypadSheet> {
     final colors = TradeXTheme.colorsOf(context);
     final textTheme = Theme.of(context).textTheme;
     const buttons = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '0', '←'];
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
+    return AnimatedReveal(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
         Text(widget.title, style: textTheme.bodyMedium?.copyWith(color: colors.textSecondary)),
         const SizedBox(height: 12),
         Text(
@@ -105,6 +106,6 @@ class _OrderKeypadSheetState extends State<OrderKeypadSheet> {
           child: Text(widget.ctaLabel ?? 'Continue'),
         ),
       ],
-    ).animate().fadeIn(280.ms).moveY(begin: 16, end: 0, curve: Curves.easeOut);
+    );
   }
 }

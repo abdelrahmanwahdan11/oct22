@@ -11,10 +11,20 @@ class SettingsController extends ChangeNotifier {
   ThemeMode _themeMode = ThemeMode.dark;
   Locale _locale = AppLocalizations.defaultLocale;
   bool _onboardingComplete = false;
+  bool _proMode = true;
+  bool _biometric = false;
+  bool _highContrast = false;
+  bool _autoRefreshPortfolio = true;
+  String _defaultCurrency = 'USD';
 
   ThemeMode get themeMode => _themeMode;
   Locale get locale => _locale;
   bool get onboardingComplete => _onboardingComplete;
+  bool get proMode => _proMode;
+  bool get biometricEnabled => _biometric;
+  bool get highContrast => _highContrast;
+  bool get autoRefreshPortfolio => _autoRefreshPortfolio;
+  String get defaultCurrency => _defaultCurrency;
 
   Future<void> load() async {
     if (!prefsRepository.isReady) {
@@ -23,6 +33,11 @@ class SettingsController extends ChangeNotifier {
     _themeMode = prefsRepository.loadThemeMode();
     _locale = prefsRepository.loadLocale() ?? AppLocalizations.defaultLocale;
     _onboardingComplete = prefsRepository.onboardingComplete;
+    _proMode = prefsRepository.loadProMode();
+    _biometric = prefsRepository.loadBiometric();
+    _highContrast = prefsRepository.loadHighContrast();
+    _autoRefreshPortfolio = prefsRepository.loadAutoRefresh();
+    _defaultCurrency = prefsRepository.loadDefaultCurrency();
     notifyListeners();
   }
 
@@ -53,5 +68,35 @@ class SettingsController extends ChangeNotifier {
   Future<void> clearLocal() async {
     await prefsRepository.clear();
     await load();
+  }
+
+  Future<void> setProMode(bool value) async {
+    _proMode = value;
+    await prefsRepository.saveProMode(value);
+    notifyListeners();
+  }
+
+  Future<void> setBiometric(bool value) async {
+    _biometric = value;
+    await prefsRepository.saveBiometric(value);
+    notifyListeners();
+  }
+
+  Future<void> setHighContrast(bool value) async {
+    _highContrast = value;
+    await prefsRepository.saveHighContrast(value);
+    notifyListeners();
+  }
+
+  Future<void> setAutoRefresh(bool value) async {
+    _autoRefreshPortfolio = value;
+    await prefsRepository.saveAutoRefresh(value);
+    notifyListeners();
+  }
+
+  Future<void> setDefaultCurrency(String value) async {
+    _defaultCurrency = value;
+    await prefsRepository.saveDefaultCurrency(value);
+    notifyListeners();
   }
 }

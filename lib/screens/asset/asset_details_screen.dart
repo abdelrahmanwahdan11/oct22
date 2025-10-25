@@ -1,7 +1,6 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../controllers/market_controller.dart';
 import '../../core/localization/app_localizations.dart';
@@ -11,6 +10,7 @@ import '../../core/utils/formatters.dart';
 import '../../widgets/components/bottom_capsule_bar.dart';
 import '../../widgets/components/chart_full.dart';
 import '../../widgets/components/timeframe_chips.dart';
+import '../../widgets/animations/animated_reveal.dart';
 
 class AssetDetailsScreen extends StatelessWidget {
   const AssetDetailsScreen({super.key, required this.assetId});
@@ -60,30 +60,37 @@ class AssetDetailsScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(24),
         children: [
-          Row(
-            children: [
-              Hero(
-                tag: 'asset_image_${item.asset.id}',
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(24),
-                  child: Image.network(item.asset.image, height: 72, width: 72, fit: BoxFit.cover),
+          AnimatedReveal(
+            child: Row(
+              children: [
+                Hero(
+                  tag: 'asset_image_${item.asset.id}',
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(24),
+                    child: Image.network(item.asset.image, height: 72, width: 72, fit: BoxFit.cover),
+                  ),
                 ),
-              ),
-              const SizedBox(width: 16),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(item.asset.name,
-                      style: Theme.of(context).textTheme.h2.copyWith(fontWeight: FontWeight.w700)),
-                  const SizedBox(height: 8),
-                  Text(item.asset.symbol, style: Theme.of(context).textTheme.bodyMedium),
-                ],
-              ),
-            ],
-          ).animate().fadeIn(280.ms).moveY(begin: 16, end: 0),
+                const SizedBox(width: 16),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(item.asset.name,
+                        style: Theme.of(context).textTheme.h2.copyWith(fontWeight: FontWeight.w700)),
+                    const SizedBox(height: 8),
+                    Text(item.asset.symbol, style: Theme.of(context).textTheme.bodyMedium),
+                  ],
+                ),
+              ],
+            ),
+          ),
           const SizedBox(height: 24),
-          Text(formatCurrency(item.quote.price),
-              style: Theme.of(context).textTheme.display.copyWith(fontSize: 40)),
+          Text(
+            formatCurrency(
+              item.quote.price,
+              currency: item.asset.currency,
+            ),
+            style: Theme.of(context).textTheme.display.copyWith(fontSize: 40),
+          ),
           const SizedBox(height: 12),
           Text(formatChangePct(item.quote.changePct),
               style: Theme.of(context)
@@ -105,9 +112,9 @@ class AssetDetailsScreen extends StatelessWidget {
               childAspectRatio: 1.6,
             ),
             children: [
-              _StatTile(label: 'Open', value: formatCurrency(item.quote.open)),
-              _StatTile(label: 'High', value: formatCurrency(item.quote.high)),
-              _StatTile(label: 'Low', value: formatCurrency(item.quote.low)),
+              _StatTile(label: 'Open', value: formatCurrency(item.quote.open, currency: item.asset.currency)),
+              _StatTile(label: 'High', value: formatCurrency(item.quote.high, currency: item.asset.currency)),
+              _StatTile(label: 'Low', value: formatCurrency(item.quote.low, currency: item.asset.currency)),
               _StatTile(label: 'Volume', value: formatVolume(item.quote.volume)),
             ],
           ),

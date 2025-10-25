@@ -1,8 +1,9 @@
-String formatCurrency(double value, {bool compact = false}) {
+String formatCurrency(double value, {bool compact = false, String currency = 'USD'}) {
+  final symbol = _currencySymbol(currency);
   if (compact) {
-    return _formatCompact(value);
+    return _formatCompact(value, symbol);
   }
-  return '\$${value.toStringAsFixed(2)}';
+  return '${symbol}${value.toStringAsFixed(2)}';
 }
 
 String formatNumber(double value, {int decimals = 2}) {
@@ -27,15 +28,32 @@ String formatVolume(double value) {
   return value.toStringAsFixed(0);
 }
 
-String _formatCompact(double value) {
+String _formatCompact(double value, String symbol) {
   if (value.abs() >= 1000000000) {
-    return '\${(value / 1000000000).toStringAsFixed(1)}B';
+    return '${symbol}${(value / 1000000000).toStringAsFixed(1)}B';
   }
   if (value.abs() >= 1000000) {
-    return '\${(value / 1000000).toStringAsFixed(1)}M';
+    return '${symbol}${(value / 1000000).toStringAsFixed(1)}M';
   }
   if (value.abs() >= 1000) {
-    return '\${(value / 1000).toStringAsFixed(1)}K';
+    return '${symbol}${(value / 1000).toStringAsFixed(1)}K';
   }
-  return '\${value.toStringAsFixed(2)}';
+  return '${symbol}${value.toStringAsFixed(2)}';
+}
+
+String _currencySymbol(String currency) {
+  switch (currency.toUpperCase()) {
+    case 'USD':
+      return '\$';
+    case 'EUR':
+      return '€';
+    case 'GBP':
+      return '£';
+    case 'AED':
+      return 'د.إ';
+    case 'SAR':
+      return 'ر.س';
+    default:
+      return '$currency ';
+  }
 }

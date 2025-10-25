@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../core/theme/app_theme.dart';
 import '../../data/models/news_item.dart';
+import '../animations/animated_reveal.dart';
 
 class NewsCard extends StatelessWidget {
   const NewsCard({super.key, required this.item, this.onTap});
@@ -15,19 +15,20 @@ class NewsCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = TradeXTheme.colorsOf(context);
     final textTheme = Theme.of(context).textTheme;
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(20),
-      child: Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: colors.surface,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: colors.border),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+    return AnimatedReveal(
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(20),
+        child: Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: colors.surface,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: colors.border),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
             Row(
               children: [
                 FaIcon(FontAwesomeIcons.newspaper, size: 16, color: colors.accent),
@@ -44,6 +45,6 @@ class NewsCard extends StatelessWidget {
           ],
         ),
       ),
-    ).animate(interval: 60.ms).fadeIn().scale(begin: 0.98, end: 1);
+    );
   }
 }

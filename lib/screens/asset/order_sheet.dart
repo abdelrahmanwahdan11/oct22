@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../controllers/orders_controller.dart';
 import '../../data/models/order.dart';
@@ -98,14 +97,14 @@ class _OrderSheetState extends State<OrderSheet> {
                   borderRadius: BorderRadius.circular(16),
                   selectedColor: Colors.white,
                   fillColor: colors.accent,
-                  children: const [
+                  children: [
                     Padding(
                       padding: EdgeInsets.symmetric(horizontal: 24),
-                      child: Text('Market'),
+                      child: Text(strings.t('market_order')),
                     ),
                     Padding(
                       padding: EdgeInsets.symmetric(horizontal: 24),
-                      child: Text('Limit'),
+                      child: Text(strings.t('limit_order')),
                     ),
                   ],
                 ),
@@ -114,7 +113,7 @@ class _OrderSheetState extends State<OrderSheet> {
                   TextField(
                     controller: _limitController,
                     keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                    decoration: const InputDecoration(labelText: 'Limit Price'),
+                    decoration: InputDecoration(labelText: strings.t('limit_price')),
                   ),
                 ],
                 const SizedBox(height: 16),
@@ -125,7 +124,7 @@ class _OrderSheetState extends State<OrderSheet> {
                     final qty = double.tryParse(_amount) ?? 0;
                     if (qty <= 0) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Enter amount')),
+                        SnackBar(content: Text(strings.t('enter_amount'))),
                       );
                       return;
                     }

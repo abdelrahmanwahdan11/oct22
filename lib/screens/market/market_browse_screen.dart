@@ -22,10 +22,26 @@ class _MarketBrowseScreenState extends State<MarketBrowseScreen> {
   int _selectedTab = 0;
 
   @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_handleScroll);
+  }
+
+  @override
   void dispose() {
     _scrollController.dispose();
     _searchController.dispose();
     super.dispose();
+  }
+
+  void _handleScroll() {
+    if (!_scrollController.hasClients) return;
+    final position = _scrollController.position;
+    if (position.pixels >= position.maxScrollExtent - 320) {
+      final market = context.readController<MarketController>();
+      market.loadMoreActive();
+      market.loadMoreTop();
+    }
   }
 
   @override
@@ -48,7 +64,10 @@ class _MarketBrowseScreenState extends State<MarketBrowseScreen> {
             icon: const FaIcon(FontAwesomeIcons.scaleBalanced),
             tooltip: strings.t('compare_assets'),
           ),
-          IconButton(onPressed: () => Navigator.of(context).pushNamed('search'), icon: const FaIcon(FontAwesomeIcons.magnifyingGlass)),
+          IconButton(
+            onPressed: () => Navigator.of(context).pushNamed('search'),
+            icon: const FaIcon(FontAwesomeIcons.magnifyingGlass),
+          ),
         ],
       ),
       bottomNavigationBar: const TradeXBottomNav(currentIndex: 1),

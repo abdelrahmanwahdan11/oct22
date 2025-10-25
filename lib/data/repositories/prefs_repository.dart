@@ -10,6 +10,11 @@ class PrefsRepository {
   static const _keyRecents = 'recent_addresses';
   static const _keySavedFilter = 'saved_filter';
   static const _keyOnboarding = 'onboarding_done';
+  static const _keyProMode = 'pref_pro_mode';
+  static const _keyBiometric = 'pref_biometric';
+  static const _keyDefaultCurrency = 'pref_default_currency';
+  static const _keyHighContrast = 'pref_high_contrast';
+  static const _keyAutoRefresh = 'pref_auto_refresh';
 
   SharedPreferences? _prefs;
 
@@ -113,4 +118,19 @@ class PrefsRepository {
   Future<void> clear() async {
     await _prefs?.clear();
   }
+
+  bool loadProMode() => _prefs?.getBool(_keyProMode) ?? true;
+  Future<void> saveProMode(bool value) async => _prefs?.setBool(_keyProMode, value);
+
+  bool loadBiometric() => _prefs?.getBool(_keyBiometric) ?? false;
+  Future<void> saveBiometric(bool value) async => _prefs?.setBool(_keyBiometric, value);
+
+  String loadDefaultCurrency() => _prefs?.getString(_keyDefaultCurrency) ?? 'USD';
+  Future<void> saveDefaultCurrency(String value) async => _prefs?.setString(_keyDefaultCurrency, value);
+
+  bool loadHighContrast() => _prefs?.getBool(_keyHighContrast) ?? false;
+  Future<void> saveHighContrast(bool value) async => _prefs?.setBool(_keyHighContrast, value);
+
+  bool loadAutoRefresh() => _prefs?.getBool(_keyAutoRefresh) ?? true;
+  Future<void> saveAutoRefresh(bool value) async => _prefs?.setBool(_keyAutoRefresh, value);
 }

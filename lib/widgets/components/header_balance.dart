@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../core/theme/app_theme.dart';
+import '../animations/animated_reveal.dart';
 
 class HeaderAction {
   const HeaderAction({
@@ -34,49 +34,51 @@ class HeaderBalance extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = TradeXTheme.colorsOf(context);
     final textTheme = Theme.of(context).textTheme;
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: colors.surface,
-        borderRadius: BorderRadius.circular(28),
-        border: Border.all(color: colors.border),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x59000000),
-            offset: Offset(0, 12),
-            blurRadius: 30,
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(title, style: textTheme.caption?.copyWith(color: colors.textSecondary)),
-          const SizedBox(height: 6),
-          Text(value, style: textTheme.display),
-          if (subtitle != null) ...[
-            const SizedBox(height: 4),
-            Text(subtitle!, style: textTheme.bodyMedium?.copyWith(color: colors.muted)),
-          ],
-          if (actions.isNotEmpty) ...[
-            const SizedBox(height: 20),
-            Wrap(
-              spacing: 12,
-              runSpacing: 12,
-              children: actions
-                  .map(
-                    (action) => _CapsuleButton(
-                      icon: action.icon,
-                      label: action.label,
-                      onTap: action.onTap,
-                    ),
-                  )
-                  .toList(),
+    return AnimatedReveal(
+      child: Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: colors.surface,
+          borderRadius: BorderRadius.circular(28),
+          border: Border.all(color: colors.border),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x59000000),
+              offset: Offset(0, 12),
+              blurRadius: 30,
             ),
           ],
-        ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(title, style: textTheme.caption?.copyWith(color: colors.textSecondary)),
+            const SizedBox(height: 6),
+            Text(value, style: textTheme.display),
+            if (subtitle != null) ...[
+              const SizedBox(height: 4),
+              Text(subtitle!, style: textTheme.bodyMedium?.copyWith(color: colors.muted)),
+            ],
+            if (actions.isNotEmpty) ...[
+              const SizedBox(height: 20),
+              Wrap(
+                spacing: 12,
+                runSpacing: 12,
+                children: actions
+                    .map(
+                      (action) => _CapsuleButton(
+                        icon: action.icon,
+                        label: action.label,
+                        onTap: action.onTap,
+                      ),
+                    )
+                    .toList(),
+              ),
+            ],
+          ],
+        ),
       ),
-    ).animate().fadeIn(280.ms).moveY(begin: 16, end: 0, curve: Curves.easeOut);
+    );
   }
 }
 

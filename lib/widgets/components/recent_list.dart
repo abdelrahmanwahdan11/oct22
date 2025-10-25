@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../core/theme/app_theme.dart';
+import '../animations/animated_reveal.dart';
 
 class RecentList extends StatelessWidget {
   const RecentList({super.key, required this.title, required this.items, this.onTap});
@@ -15,9 +15,10 @@ class RecentList extends StatelessWidget {
     final colors = TradeXTheme.colorsOf(context);
     final textTheme = Theme.of(context).textTheme;
     if (items.isEmpty) return const SizedBox.shrink();
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
+    return AnimatedReveal(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
         Text(title, style: textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w600)),
         const SizedBox(height: 12),
         SizedBox(
@@ -58,6 +59,6 @@ class RecentList extends StatelessWidget {
           ),
         ),
       ],
-    ).animate().fadeIn(280.ms).moveY(begin: 16, end: 0, curve: Curves.easeOut);
+    );
   }
 }

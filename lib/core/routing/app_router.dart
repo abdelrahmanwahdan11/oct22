@@ -12,6 +12,7 @@ import '../../screens/market/market_browse_screen.dart';
 import '../../screens/market/prices_fxmetals_screen.dart';
 import '../../screens/market/search_screen.dart';
 import '../../screens/market/asset_comparison_screen.dart';
+import '../../screens/feature/feature_experience_screen.dart';
 import '../../screens/news/news_center_screen.dart';
 import '../../screens/onboarding/onboarding_screen.dart';
 import '../../screens/portfolio/portfolio_home_screen.dart';
@@ -73,6 +74,10 @@ class AppRouter {
         return _default(settings, const SettingsScreen());
       case 'ai.hub':
         return _default(settings, const AiInsightsScreen());
+      case 'feature.experience':
+        final args = settings.arguments as FeatureExperienceArgs?;
+        if (args == null) return null;
+        return _default(settings, FeatureExperienceScreen(args: args));
       default:
         return null;
     }

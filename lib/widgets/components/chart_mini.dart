@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../controllers/settings_controller.dart';
+import '../../core/providers/controller_scope.dart';
 import '../../core/theme/app_theme.dart';
 
 class ChartMini extends StatelessWidget {
@@ -11,12 +13,17 @@ class ChartMini extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = TradeXTheme.colorsOf(context);
+    final settings = context.watchController<SettingsController>();
+    final highContrast = settings.highContrast;
+    final strokeColor = highContrast
+        ? (isGain ? Colors.lightGreenAccent : Colors.orangeAccent)
+        : (isGain ? colors.profit : colors.loss);
     return SizedBox(
       height: 48,
       child: CustomPaint(
         painter: _MiniChartPainter(
           points: points,
-          color: isGain ? colors.profit : colors.loss,
+          color: strokeColor,
         ),
       ),
     );

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../controllers/auth_controller.dart';
 import '../../controllers/settings_controller.dart';
 import '../../core/localization/app_localizations.dart';
 import '../../core/providers/controller_scope.dart';
+import '../../widgets/animations/animated_reveal.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -48,47 +48,51 @@ class _LoginScreenState extends State<LoginScreen> {
                     _autoValidate ? AutovalidateMode.always : AutovalidateMode.disabled,
                 child: Column(
                   children: [
-                    TextFormField(
-                      controller: _emailController,
-                      decoration: InputDecoration(labelText: strings.t('email')),
-                      keyboardType: TextInputType.emailAddress,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return strings.t('required_field');
-                        }
-                        if (!value.contains('@')) {
-                          return strings.t('invalid_email');
-                        }
-                        return null;
-                      },
-                    ).animate().fadeIn(280.ms).moveY(begin: 16, end: 0),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      controller: _passwordController,
-                      decoration: InputDecoration(
-                        labelText: strings.t('password'),
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            _obscurePassword
-                                ? Icons.visibility_off_outlined
-                                : Icons.visibility_outlined,
-                          ),
-                          onPressed: () => setState(() {
-                            _obscurePassword = !_obscurePassword;
-                          }),
-                        ),
+                    AnimatedReveal(
+                      child: TextFormField(
+                        controller: _emailController,
+                        decoration: InputDecoration(labelText: strings.t('email')),
+                        keyboardType: TextInputType.emailAddress,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return strings.t('required_field');
+                          }
+                          if (!value.contains('@')) {
+                            return strings.t('invalid_email');
+                          }
+                          return null;
+                        },
                       ),
-                      obscureText: _obscurePassword,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return strings.t('required_field');
-                        }
-                        if (value.length < 6) {
-                          return 'Min 6 characters';
-                        }
-                        return null;
-                      },
-                    ).animate().fadeIn(280.ms).moveY(begin: 16, end: 0),
+                    ),
+                    const SizedBox(height: 16),
+                    AnimatedReveal(
+                      child: TextFormField(
+                        controller: _passwordController,
+                        decoration: InputDecoration(
+                          labelText: strings.t('password'),
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _obscurePassword
+                                  ? Icons.visibility_off_outlined
+                                  : Icons.visibility_outlined,
+                            ),
+                            onPressed: () => setState(() {
+                              _obscurePassword = !_obscurePassword;
+                            }),
+                          ),
+                        ),
+                        obscureText: _obscurePassword,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return strings.t('required_field');
+                          }
+                          if (value.length < 6) {
+                            return 'Min 6 characters';
+                          }
+                          return null;
+                        },
+                      ),
+                    ),
                     const SizedBox(height: 24),
                     FilledButton(
                       onPressed: auth.isLoading

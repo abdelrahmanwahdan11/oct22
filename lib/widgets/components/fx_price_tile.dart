@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/formatters.dart';
 import '../../data/models/fx_commodity.dart';
+import '../animations/animated_reveal.dart';
 
 class FxPriceTile extends StatelessWidget {
   const FxPriceTile({
@@ -23,16 +23,17 @@ class FxPriceTile extends StatelessWidget {
     final colors = TradeXTheme.colorsOf(context);
     final textTheme = Theme.of(context).textTheme;
     final changeColor = pair.isGain ? colors.profit : colors.loss;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
-      decoration: BoxDecoration(
-        color: colors.surface,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: colors.border),
-      ),
-      child: Row(
-        children: [
-          CircleAvatar(
+    return AnimatedReveal(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+        decoration: BoxDecoration(
+          color: colors.surface,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: colors.border),
+        ),
+        child: Row(
+          children: [
+            CircleAvatar(
             radius: 24,
             backgroundColor: colors.surfaceSoft,
             child: Text('${pair.base}\n${pair.quote}',
@@ -74,6 +75,6 @@ class FxPriceTile extends StatelessWidget {
           ],
         ],
       ),
-    ).animate(interval: 60.ms).fadeIn().scale(begin: 0.98, end: 1);
+    );
   }
 }

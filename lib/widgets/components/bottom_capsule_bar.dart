@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../core/theme/app_theme.dart';
+import '../animations/animated_reveal.dart';
 
 class BottomCapsuleBar extends StatelessWidget {
   const BottomCapsuleBar({
@@ -26,41 +26,43 @@ class BottomCapsuleBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = TradeXTheme.colorsOf(context);
     final textTheme = Theme.of(context).textTheme;
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-      decoration: BoxDecoration(
-        color: colors.surface,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: colors.border),
+    return AnimatedReveal(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+        decoration: BoxDecoration(
+          color: colors.surface,
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: colors.border),
+        ),
+        child: Row(
+          children: [
+            _CapsuleButton(
+              icon: FontAwesomeIcons.arrowUp,
+              label: buyLabel,
+              onTap: onBuy,
+              background: colors.accent,
+              foreground: colors.bg,
+            ),
+            const SizedBox(width: 12),
+            _CapsuleButton(
+              icon: FontAwesomeIcons.arrowDown,
+              label: sellLabel,
+              onTap: onSell,
+              background: colors.surfaceSoft,
+              foreground: colors.textPrimary,
+            ),
+            const SizedBox(width: 12),
+            _CapsuleButton(
+              icon: FontAwesomeIcons.rightLeft,
+              label: exchangeLabel,
+              onTap: onExchange,
+              background: colors.surfaceSoft,
+              foreground: colors.textPrimary,
+            ),
+          ],
+        ),
       ),
-      child: Row(
-        children: [
-          _CapsuleButton(
-            icon: FontAwesomeIcons.arrowUp,
-            label: buyLabel,
-            onTap: onBuy,
-            background: colors.accent,
-            foreground: colors.bg,
-          ),
-          const SizedBox(width: 12),
-          _CapsuleButton(
-            icon: FontAwesomeIcons.arrowDown,
-            label: sellLabel,
-            onTap: onSell,
-            background: colors.surfaceSoft,
-            foreground: colors.textPrimary,
-          ),
-          const SizedBox(width: 12),
-          _CapsuleButton(
-            icon: FontAwesomeIcons.rightLeft,
-            label: exchangeLabel,
-            onTap: onExchange,
-            background: colors.surfaceSoft,
-            foreground: colors.textPrimary,
-          ),
-        ],
-      ),
-    ).animate().fadeIn(280.ms).moveY(begin: 16, end: 0, curve: Curves.easeOut);
+    );
   }
 }
 

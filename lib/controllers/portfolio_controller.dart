@@ -18,15 +18,35 @@ class PortfolioController extends ChangeNotifier {
   bool _loading = false;
   bool _hasMore = true;
   int _page = 0;
+  String _searchQuery = '';
 
   StreamSubscription<Map<String, Quote>>? _quotesSubscription;
   bool _initialized = false;
 
   List<PortfolioView> get positions => List.unmodifiable(_positions);
+  List<PortfolioView> get filteredPositions {
+    if (_searchQuery.trim().isEmpty) {
+      return List.unmodifiable(_positions);
+    }
+    final query = _searchQuery.toLowerCase().trim();
+    return _positions
+        .where((position) {
+          final asset = marketRepository.findAsset(position.assetId);
+          final symbol = asset?.symbol.toLowerCase() ?? '';
+          final name = asset?.name.toLowerCase() ?? '';
+          final combined = '$symbol$name${position.assetId}'.toLowerCase();
+          return symbol.contains(query) ||
+              name.contains(query) ||
+              combined.contains(query) ||
+              position.assetId.toLowerCase().contains(query);
+        })
+        .toList();
+  }
   bool get isLoading => _loading && _positions.isEmpty;
   bool get isLoadingMore => _loading && _positions.isNotEmpty;
   bool get hasMore => _hasMore;
   double get totalBalance => portfolioRepository.totalBalance;
+  String get searchQuery => _searchQuery;
 
   List<String> get recentRecipients => prefsRepository.loadRecents();
 
@@ -53,6 +73,13 @@ class PortfolioController extends ChangeNotifier {
     if (_loading || !_hasMore) return;
     _page += 1;
     await _load();
+  }
+
+  void setSearchQuery(String value) {
+    final normalized = value.trim();
+    if (_searchQuery == normalized) return;
+    _searchQuery = normalized;
+    notifyListeners();
   }
 
   Future<void> addRecent(String value) async {

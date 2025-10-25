@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../controllers/settings_controller.dart';
+import '../../core/providers/controller_scope.dart';
 import '../../core/theme/app_theme.dart';
 
 class ChartFull extends StatelessWidget {
@@ -17,11 +19,17 @@ class ChartFull extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = TradeXTheme.colorsOf(context);
+    final settings = context.watchController<SettingsController>();
+    final highContrast = settings.highContrast;
+    final lineColor = highContrast
+        ? (isGain ? Colors.lightGreenAccent : Colors.orangeAccent)
+        : (isGain ? colors.profit : colors.loss);
+    final gridTone = highContrast ? colors.accent : colors.border;
     return Container(
       decoration: BoxDecoration(
         color: colors.surface,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: colors.border),
+        border: Border.all(color: gridTone.withOpacity(0.6)),
       ),
       padding: const EdgeInsets.all(16),
       child: SizedBox(
@@ -29,8 +37,8 @@ class ChartFull extends StatelessWidget {
         child: CustomPaint(
           painter: _FullChartPainter(
             points: points,
-            color: isGain ? colors.profit : colors.loss,
-            gridColor: colors.border,
+            color: lineColor,
+            gridColor: gridTone,
           ),
           child: Align(
             alignment: Alignment.bottomCenter,

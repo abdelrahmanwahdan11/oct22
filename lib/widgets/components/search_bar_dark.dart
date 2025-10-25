@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../core/theme/app_theme.dart';
+import '../animations/animated_reveal.dart';
 
 class SearchBarDark extends StatelessWidget {
   const SearchBarDark({
@@ -25,12 +25,13 @@ class SearchBarDark extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = TradeXTheme.colorsOf(context);
-    return Container(
-      decoration: BoxDecoration(
-        color: colors.surfaceSoft,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: colors.border),
-      ),
+    return AnimatedReveal(
+      child: Container(
+        decoration: BoxDecoration(
+          color: colors.surfaceSoft,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: colors.border),
+        ),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       child: Row(
         children: [
@@ -67,6 +68,6 @@ class SearchBarDark extends StatelessWidget {
           ],
         ],
       ),
-    ).animate().fadeIn(280.ms).moveY(begin: 16, end: 0, curve: Curves.easeOut);
+    );
   }
 }

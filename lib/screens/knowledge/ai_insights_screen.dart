@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../core/constants/feature_catalog.dart';
 import '../../core/localization/app_localizations.dart';
 import '../../core/theme/app_theme.dart';
 import '../../widgets/components/feature_showcase.dart';
+import '../../widgets/animations/animated_reveal.dart';
 
 class AiInsightsScreen extends StatelessWidget {
   const AiInsightsScreen({super.key});
@@ -43,15 +43,19 @@ class AiInsightsScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        strings.t('ai_briefing_headline'),
-                        style: theme.textTheme.displaySmall,
-                      ).animate().fadeIn().moveY(begin: 12, end: 0),
+                      AnimatedReveal(
+                        child: Text(
+                          strings.t('ai_briefing_headline'),
+                          style: theme.textTheme.displaySmall,
+                        ),
+                      ),
                       const SizedBox(height: 12),
-                      Text(
-                        strings.t('ai_briefing_intro'),
-                        style: theme.textTheme.bodyLarge?.copyWith(height: 1.5),
-                      ).animate().fadeIn(280.ms).moveY(begin: 12, end: 0),
+                      AnimatedReveal(
+                        child: Text(
+                          strings.t('ai_briefing_intro'),
+                          style: theme.textTheme.bodyLarge?.copyWith(height: 1.5),
+                        ),
+                      ),
                       const SizedBox(height: 32),
                       _InsightSection(
                         title: strings.t('ai_focus_market'),
