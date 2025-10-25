@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../controllers/settings_controller.dart';
 import '../../core/localization/app_localizations.dart';
-import '../../core/providers/notifier_provider.dart';
-import '../../core/theme/app_theme.dart';
-import '../../core/utils/animations.dart';
+import '../../core/providers/controller_scope.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -15,165 +13,174 @@ class OnboardingScreen extends StatefulWidget {
 }
 
 class _OnboardingScreenState extends State<OnboardingScreen> {
-  late final PageController _controller;
+  final _controller = PageController();
   int _index = 0;
 
   final _pages = const [
-    _OnboardingPage(
-      image: 'https://images.unsplash.com/photo-1501183638710-841dd1904471',
-      titleKey: 'onboarding_title',
-      subtitleKey: 'onboarding_subtitle',
-    ),
-    _OnboardingPage(
-      image: 'https://images.unsplash.com/photo-1494526585095-c41746248156',
-      titleKey: 'summary',
-      subtitleKey: 'market',
-    ),
-    _OnboardingPage(
-      image: 'https://images.unsplash.com/photo-1505691938895-1758d7feb511',
-      titleKey: 'explore',
-      subtitleKey: 'search_hint',
-    ),
+    {
+      'image': 'https://images.unsplash.com/photo-1642790116364-46db109d7d31',
+      'title': 'Smart trading. Night interface. Live data.',
+      'bullets': [
+        'Stocks, crypto & metals',
+        'Alerts & analyst ratings',
+        'Easy buy & sell orders'
+      ],
+    },
+    {
+      'image': 'https://images.unsplash.com/photo-1618005198919-d3d4b5a92eee',
+      'title': 'Track your positions in real time',
+      'bullets': [
+        'Dark & light modes',
+        'Pull-to-refresh portfolios',
+        'Mock data with instant feedback'
+      ],
+    },
+    {
+      'image': 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4',
+      'title': 'Send, receive & swap effortlessly',
+      'bullets': [
+        'Capsule actions and keypads',
+        'Watchlists synced locally',
+        'Bi-lingual layout with RTL'
+      ],
+    },
   ];
 
   @override
-  void initState() {
-    super.initState();
-    _controller = PageController();
-  }
-
-  Future<void> _complete() async {
-    final settings = NotifierProvider.read<SettingsController>(context);
-    await settings.completeOnboarding();
-    if (!mounted) return;
-    Navigator.of(context).pushReplacementNamed('auth.login');
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final settings = NotifierProvider.of<SettingsController>(context);
     final strings = AppLocalizations.of(context);
-    final isDark = settings.isDarkMode;
+    final settings = context.watchController<SettingsController>();
     return Scaffold(
-      body: Container(
-        decoration: AppDecorations.gradientBackground(dark: isDark),
-        child: SafeArea(
-          child: Column(
-            children: [
-              Expanded(
-                child: PageView.builder(
-                  controller: _controller,
-                  onPageChanged: (value) => setState(() => _index = value),
-                  itemCount: _pages.length,
-                  itemBuilder: (context, index) {
-                    final page = _pages[index];
-                    return Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
+      body: Stack(
+        children: [
+          PageView.builder(
+            controller: _controller,
+            onPageChanged: (value) => setState(() => _index = value),
+            itemCount: _pages.length,
+            itemBuilder: (context, index) {
+              final page = _pages[index];
+              return Stack(
+                fit: StackFit.expand,
+                children: [
+                  Image.network(page['image'] as String, fit: BoxFit.cover),
+                  Container(color: Colors.black.withOpacity(0.6)),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 48),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Expanded(
-                          child: Padding(
-                            padding: const EdgeInsets.all(24),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(28),
-                              child: Image.network(page.image, fit: BoxFit.cover),
-                            ).fadeMove(),
-                          ),
-                        ),
+                        const Spacer(),
                         Text(
-                          strings.t(page.titleKey),
+                          strings.t('app_name'),
+                          style: Theme.of(context).textTheme.display?.copyWith(color: Colors.white),
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          page['title'] as String,
                           style: Theme.of(context)
                               .textTheme
-                              .headlineMedium
-                              ?.copyWith(fontWeight: FontWeight.bold),
-                          textAlign: TextAlign.center,
-                        ).fadeMove(delay: 100),
-                        const SizedBox(height: 12),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 32),
-                          child: Text(
-                            strings.t(page.subtitleKey),
-                            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                  color: Theme.of(context)
-                                      .textTheme
-                                      .bodyLarge
-                                      ?.color
-                                      ?.withOpacity(0.7),
-                                ),
-                            textAlign: TextAlign.center,
-                          ).fadeMove(delay: 150),
-                        ),
-                        const SizedBox(height: 32),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: List.generate(
-                            _pages.length,
-                            (i) => AnimatedContainer(
-                              duration: const Duration(milliseconds: 300),
-                              margin: const EdgeInsets.symmetric(horizontal: 6),
-                              height: 6,
-                              width: _index == i ? 24 : 10,
-                              decoration: BoxDecoration(
-                                color: _index == i
-                                    ? Theme.of(context).colorScheme.primary
-                                    : Theme.of(context)
-                                        .colorScheme
-                                        .primary
-                                        .withOpacity(0.2),
-                                borderRadius: BorderRadius.circular(6),
+                              .h1
+                              .copyWith(color: Colors.white, fontWeight: FontWeight.w700),
+                        ).animate().fadeIn(500.ms).moveY(begin: 20, end: 0),
+                        const SizedBox(height: 16),
+                        ...List<Widget>.from(
+                          (page['bullets'] as List<String>).map(
+                            (bullet) => Padding(
+                              padding: const EdgeInsets.only(bottom: 8),
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.check_rounded, color: Colors.white, size: 18),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Text(
+                                      bullet,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyMedium
+                                          ?.copyWith(color: Colors.white70),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ),
                         ),
                         const SizedBox(height: 32),
+                        Row(
+                          children: List.generate(
+                            _pages.length,
+                            (dot) => AnimatedContainer(
+                              duration: const Duration(milliseconds: 250),
+                              margin: const EdgeInsets.only(right: 6),
+                              height: 8,
+                              width: _index == dot ? 24 : 10,
+                              decoration: BoxDecoration(
+                                color: _index == dot ? Colors.white : Colors.white38,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: OutlinedButton(
+                                onPressed: () async {
+                                  await settings.completeOnboarding();
+                                  if (!mounted) return;
+                                  Navigator.of(context).pushReplacementNamed('auth.login');
+                                },
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: Colors.white,
+                                  side: const BorderSide(color: Colors.white54),
+                                ),
+                                child: Text(strings.t('skip')),
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: FilledButton(
+                                onPressed: () async {
+                                  if (_index < _pages.length - 1) {
+                                    _controller.animateToPage(
+                                      _index + 1,
+                                      duration: const Duration(milliseconds: 400),
+                                      curve: Curves.easeOut,
+                                    );
+                                  } else {
+                                    await settings.completeOnboarding();
+                                    if (!mounted) return;
+                                    Navigator.of(context).pushReplacementNamed('auth.login');
+                                  }
+                                },
+                                style: FilledButton.styleFrom(
+                                  backgroundColor: Colors.white,
+                                  foregroundColor: Colors.black,
+                                  shape: const StadiumBorder(),
+                                ),
+                                child: Text(_index < _pages.length - 1
+                                    ? strings.t('continue')
+                                    : strings.t('start')),
+                              ),
+                            ),
+                          ],
+                        ),
                       ],
-                    );
-                  },
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(24),
-                child: Row(
-                  children: [
-                    TextButton(
-                      onPressed: _complete,
-                      child: Text(strings.t('skip')),
                     ),
-                    const Spacer(),
-                    if (_index < _pages.length - 1)
-                      FilledButton.icon(
-                        onPressed: () {
-                          _controller.nextPage(
-                            duration: const Duration(milliseconds: 320),
-                            curve: Curves.easeOut,
-                          );
-                        },
-                        icon: const FaIcon(FontAwesomeIcons.arrowRight, size: 16),
-                        label: Text(strings.t('next')),
-                      )
-                    else
-                      FilledButton(
-                        onPressed: _complete,
-                        child: Text(strings.t('start')),
-                      ),
-                  ],
-                ),
-              ),
-            ],
+                  ),
+                ],
+              );
+            },
           ),
-        ),
+        ],
       ),
     );
   }
-}
-
-class _OnboardingPage {
-  const _OnboardingPage({
-    required this.image,
-    required this.titleKey,
-    required this.subtitleKey,
-  });
-
-  final String image;
-  final String titleKey;
-  final String subtitleKey;
 }

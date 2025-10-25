@@ -1,75 +1,116 @@
 import 'dart:convert';
 
+import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class PrefsRepository {
-  static const _themeKey = 'theme';
-  static const _localeKey = 'locale';
-  static const _favoritesKey = 'favorites';
-  static const _savedFilterKey = 'saved_filter';
-  static const _onboardingKey = 'onboarding_done';
+  static const _keyTheme = 'theme';
+  static const _keyLocale = 'locale';
+  static const _keyWatchlist = 'watchlist';
+  static const _keyRecents = 'recent_addresses';
+  static const _keySavedFilter = 'saved_filter';
+  static const _keyOnboarding = 'onboarding_done';
 
   SharedPreferences? _prefs;
 
   Future<void> init() async {
     _prefs ??= await SharedPreferences.getInstance();
+    final existingRecents = _prefs?.getStringList(_keyRecents);
+    if (existingRecents == null || existingRecents.isEmpty) {
+      await _prefs?.setStringList(_keyRecents, [
+        '0x7CB842B...2A1DA4D',
+        'bc1pwkf...8K9GM9FZ',
+        'BTC',
+        'ETH',
+      ]);
+    }
   }
 
-  Future<String?> loadThemeMode() async {
-    await init();
-    return _prefs!.getString(_themeKey);
+  bool get isReady => _prefs != null;
+
+  Future<void> setOnboardingComplete(bool value) async {
+    await _prefs?.setBool(_keyOnboarding, value);
   }
 
-  Future<void> saveThemeMode(String mode) async {
-    await init();
-    await _prefs!.setString(_themeKey, mode);
+  bool get onboardingComplete => _prefs?.getBool(_keyOnboarding) ?? false;
+
+  ThemeMode loadThemeMode() {
+    final value = _prefs?.getString(_keyTheme);
+    switch (value) {
+      case 'light':
+        return ThemeMode.light;
+      case 'dark':
+        return ThemeMode.dark;
+      case 'system':
+        return ThemeMode.system;
+      default:
+        return ThemeMode.dark;
+    }
   }
 
-  Future<String?> loadLocale() async {
-    await init();
-    return _prefs!.getString(_localeKey);
+  Future<void> saveThemeMode(ThemeMode mode) async {
+    final value = switch (mode) {
+      ThemeMode.dark => 'dark',
+      ThemeMode.light => 'light',
+      _ => 'system',
+    };
+    await _prefs?.setString(_keyTheme, value);
   }
 
-  Future<void> saveLocale(String locale) async {
-    await init();
-    await _prefs!.setString(_localeKey, locale);
+  Locale? loadLocale() {
+    final code = _prefs?.getString(_keyLocale);
+    if (code == null || code.isEmpty) return null;
+    return Locale(code);
   }
 
-  Future<Set<String>> loadFavorites() async {
-    await init();
-    final list = _prefs!.getStringList(_favoritesKey) ?? <String>[];
-    return list.toSet();
+  Future<void> saveLocale(Locale locale) async {
+    await _prefs?.setString(_keyLocale, locale.languageCode);
   }
 
-  Future<void> saveFavorites(Set<String> ids) async {
-    await init();
-    await _prefs!.setStringList(_favoritesKey, ids.toList());
+  List<String> loadWatchlist() {
+    return _prefs?.getStringList(_keyWatchlist) ?? <String>[];
   }
 
-  Future<Map<String, dynamic>?> loadSavedFilter() async {
-    await init();
-    final jsonString = _prefs!.getString(_savedFilterKey);
+  Future<void> saveWatchlist(List<String> watchlist) async {
+    await _prefs?.setStringList(_keyWatchlist, watchlist);
+  }
+
+  Future<List<String>> toggleWatch(String assetId) async {
+    final current = loadWatchlist();
+    if (current.contains(assetId)) {
+      current.remove(assetId);
+    } else {
+      current.add(assetId);
+    }
+    await saveWatchlist(current);
+    return current;
+  }
+
+  List<String> loadRecents() {
+    return _prefs?.getStringList(_keyRecents) ?? <String>[];
+  }
+
+  Future<void> addRecent(String value) async {
+    final current = loadRecents();
+    current.remove(value);
+    current.insert(0, value);
+    if (current.length > 10) {
+      current.removeRange(10, current.length);
+    }
+    await _prefs?.setStringList(_keyRecents, current);
+  }
+
+  Map<String, dynamic>? loadSavedFilter() {
+    final jsonString = _prefs?.getString(_keySavedFilter);
     if (jsonString == null) return null;
     return json.decode(jsonString) as Map<String, dynamic>;
   }
 
-  Future<void> saveFilter(Map<String, dynamic> value) async {
-    await init();
-    await _prefs!.setString(_savedFilterKey, json.encode(value));
+  Future<void> saveFilter(Map<String, dynamic> filter) async {
+    await _prefs?.setString(_keySavedFilter, json.encode(filter));
   }
 
   Future<void> clear() async {
-    await init();
-    await _prefs!.clear();
-  }
-
-  Future<bool> isOnboardingDone() async {
-    await init();
-    return _prefs!.getBool(_onboardingKey) ?? false;
-  }
-
-  Future<void> setOnboardingDone() async {
-    await init();
-    await _prefs!.setBool(_onboardingKey, true);
+    await _prefs?.clear();
   }
 }
