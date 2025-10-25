@@ -33,6 +33,7 @@ class MarketController extends ChangeNotifier {
   List<AssetQuote> get top => List.unmodifiable(_top);
   List<AssetQuote> get trending => List.unmodifiable(_trending);
   List<AssetQuote> get mostActive => List.unmodifiable(_mostActive);
+  List<Asset> get allAssets => List.unmodifiable(marketRepository.assets);
   Set<String> get watchlist => _watchlist;
   List<AssetQuote> get watchlistAssets => _watchlist
       .map((id) => marketRepository.findAssetQuote(id))
@@ -123,6 +124,8 @@ class MarketController extends ChangeNotifier {
   }
 
   bool isWatched(String id) => _watchlist.contains(id);
+
+  AssetQuote? assetQuote(String id) => marketRepository.findAssetQuote(id);
 
   Future<void> toggleWatch(String id) async {
     _watchlist = (await prefsRepository.toggleWatch(id)).toSet();

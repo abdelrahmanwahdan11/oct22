@@ -19,6 +19,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordController = TextEditingController();
 
   bool _autoValidate = false;
+  bool _obscurePassword = true;
 
   @override
   void dispose() {
@@ -64,8 +65,20 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SizedBox(height: 16),
                     TextFormField(
                       controller: _passwordController,
-                      decoration: InputDecoration(labelText: strings.t('password')),
-                      obscureText: true,
+                      decoration: InputDecoration(
+                        labelText: strings.t('password'),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _obscurePassword
+                                ? Icons.visibility_off_outlined
+                                : Icons.visibility_outlined,
+                          ),
+                          onPressed: () => setState(() {
+                            _obscurePassword = !_obscurePassword;
+                          }),
+                        ),
+                      ),
+                      obscureText: _obscurePassword,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return strings.t('required_field');

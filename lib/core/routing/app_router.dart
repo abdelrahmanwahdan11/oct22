@@ -7,9 +7,11 @@ import '../../screens/auth/forgot_screen.dart';
 import '../../screens/auth/login_screen.dart';
 import '../../screens/auth/register_screen.dart';
 import '../../screens/filters/filters_sheet.dart';
+import '../../screens/knowledge/ai_insights_screen.dart';
 import '../../screens/market/market_browse_screen.dart';
 import '../../screens/market/prices_fxmetals_screen.dart';
 import '../../screens/market/search_screen.dart';
+import '../../screens/market/asset_comparison_screen.dart';
 import '../../screens/news/news_center_screen.dart';
 import '../../screens/onboarding/onboarding_screen.dart';
 import '../../screens/portfolio/portfolio_home_screen.dart';
@@ -36,6 +38,8 @@ class AppRouter {
         return _default(settings, const PortfolioHomeScreen());
       case 'market.browse':
         return _default(settings, const MarketBrowseScreen());
+      case 'asset.compare':
+        return _default(settings, const AssetComparisonScreen());
       case 'prices.fxmetals':
         return _default(settings, const PricesFxMetalsScreen());
       case 'asset.details':
@@ -67,6 +71,8 @@ class AppRouter {
         return _default(settings, const AccountScreen());
       case 'settings':
         return _default(settings, const SettingsScreen());
+      case 'ai.hub':
+        return _default(settings, const AiInsightsScreen());
       default:
         return null;
     }

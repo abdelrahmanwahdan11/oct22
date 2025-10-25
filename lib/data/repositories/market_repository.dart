@@ -46,11 +46,19 @@ class MarketRepository {
       filtered = filtered.where((asset) => asset.type == type);
     }
     if (search != null && search.isNotEmpty) {
-      final query = search.toLowerCase();
-      filtered = filtered.where(
-        (asset) => asset.symbol.toLowerCase().contains(query) ||
-            asset.name.toLowerCase().contains(query),
-      );
+      final query = search.toLowerCase().trim();
+      final collapsed = query.replaceAll(RegExp(r'\s+'), '');
+      filtered = filtered.where((asset) {
+        final symbol = asset.symbol.toLowerCase();
+        final name = asset.name.toLowerCase();
+        final currency = asset.currency.toLowerCase();
+        final normalizedName = name.replaceAll(RegExp(r'\s+'), '');
+        return symbol.contains(query) ||
+            name.contains(query) ||
+            currency.contains(query) ||
+            symbol.contains(collapsed) ||
+            normalizedName.contains(collapsed);
+      });
     }
     final list = filtered.toList();
     final start = page * pageSize;

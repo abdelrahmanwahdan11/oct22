@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -12,6 +15,7 @@ import '../../widgets/components/asset_row.dart';
 import '../../widgets/components/header_balance.dart';
 import '../../widgets/components/position_row.dart';
 import '../../widgets/components/search_bar_dark.dart';
+import '../../widgets/components/feature_showcase.dart';
 import '../shared/tradex_bottom_nav.dart';
 
 class PortfolioHomeScreen extends StatefulWidget {
@@ -24,16 +28,13 @@ class PortfolioHomeScreen extends StatefulWidget {
 class _PortfolioHomeScreenState extends State<PortfolioHomeScreen> {
   final _scrollController = ScrollController();
   final _searchController = TextEditingController();
-
-  @override
-  void initState() {
-    super.initState();
-  }
+  Timer? _autoRefreshTimer;
 
   @override
   void dispose() {
     _scrollController.dispose();
     _searchController.dispose();
+    _autoRefreshTimer?.cancel();
     super.dispose();
   }
 
@@ -47,12 +48,54 @@ class _PortfolioHomeScreenState extends State<PortfolioHomeScreen> {
     final market = context.watchController<MarketController>();
     final strings = AppLocalizations.of(context);
     final colors = TradeXTheme.colorsOf(context);
-    _searchController.text = market.searchQuery;
+    if (_searchController.text != market.searchQuery) {
+      _searchController.value = TextEditingValue(
+        text: market.searchQuery,
+        selection: TextSelection.collapsed(offset: market.searchQuery.length),
+      );
+    }
+
+    _autoRefreshTimer ??= Timer.periodic(const Duration(minutes: 1), (_) {
+      final portfolioCtrl = context.readController<PortfolioController>();
+      final marketCtrl = context.readController<MarketController>();
+      unawaited(_refresh(portfolioCtrl, marketCtrl));
+    });
+
+    final size = MediaQuery.of(context).size;
+    final maxWidth = size.width >= 1200
+        ? 1040.0
+        : size.width >= 900
+            ? 920.0
+            : size.width >= 600
+                ? 780.0
+                : size.width;
+    final double basePadding;
+    if (size.width > maxWidth) {
+      basePadding = max((size.width - maxWidth) / 2, 24.0);
+    } else {
+      basePadding = 24.0;
+    }
+    EdgeInsetsGeometry horizontalPadding([double extra = 0]) =>
+        EdgeInsets.symmetric(horizontal: basePadding + extra);
+    Widget wrapContent(Widget child) {
+      return Align(
+        alignment: Alignment.topCenter,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: maxWidth),
+          child: child,
+        ),
+      );
+    }
 
     return Scaffold(
       appBar: AppBar(
         title: Text(strings.t('app_name')),
         actions: [
+          IconButton(
+            onPressed: () => Navigator.of(context).pushNamed('ai.hub'),
+            icon: const FaIcon(FontAwesomeIcons.robot),
+            tooltip: strings.t('ai_insights'),
+          ),
           IconButton(onPressed: () {}, icon: const FaIcon(FontAwesomeIcons.bell)),
           IconButton(onPressed: () => Navigator.of(context).pushNamed('account'), icon: const FaIcon(FontAwesomeIcons.gear)),
         ],
@@ -65,12 +108,13 @@ class _PortfolioHomeScreenState extends State<PortfolioHomeScreen> {
           controller: _scrollController,
           slivers: [
             SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+              padding: horizontalPadding(),
               sliver: SliverToBoxAdapter(
-                child: HeaderBalance(
-                  title: 'Total Balance',
-                  value: formatCurrency(portfolio.totalBalance, compact: true),
-                  actions: [
+                child: wrapContent(
+                  HeaderBalance(
+                    title: 'Total Balance',
+                    value: formatCurrency(portfolio.totalBalance, compact: true),
+                    actions: [
                     HeaderAction(
                       icon: FontAwesomeIcons.circleArrowDown,
                       label: strings.t('receive'),
@@ -89,14 +133,16 @@ class _PortfolioHomeScreenState extends State<PortfolioHomeScreen> {
                   ],
                 ),
               ),
+              ),
             ),
             SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
+              padding: horizontalPadding(),
               sliver: SliverToBoxAdapter(
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: FilledButton.icon(
+                child: wrapContent(
+                  Row(
+                    children: [
+                      Expanded(
+                        child: FilledButton.icon(
                         onPressed: () => Navigator.of(context).pushNamed('transfer.send'),
                         icon: const FaIcon(FontAwesomeIcons.paperPlane),
                         label: Text(strings.t('send')),
@@ -113,11 +159,13 @@ class _PortfolioHomeScreenState extends State<PortfolioHomeScreen> {
                   ],
                 ).animate().fadeIn(280.ms).moveY(begin: 16, end: 0),
               ),
+              ),
             ),
             SliverPadding(
-              padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
+              padding: horizontalPadding(),
               sliver: SliverToBoxAdapter(
-                child: SearchBarDark(
+                child: wrapContent(
+                  SearchBarDark(
                   hintText: strings.t('search_hint'),
                   controller: _searchController,
                   onChanged: (value) => market.setSearchQuery(value),
@@ -126,83 +174,114 @@ class _PortfolioHomeScreenState extends State<PortfolioHomeScreen> {
               ),
             ),
             SliverPadding(
-              padding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
+              padding: horizontalPadding(),
               sliver: SliverToBoxAdapter(
-                child: Text(strings.t('positions'),
-                    style: Theme.of(context).textTheme.h2.copyWith(fontWeight: FontWeight.w700)),
-              ),
-            ),
-            SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              sliver: SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    if (index >= portfolio.positions.length) {
-                      if (portfolio.hasMore && !portfolio.isLoadingMore) {
-                        portfolio.loadMore();
-                      }
-                      if (portfolio.isLoadingMore) {
-                        return const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 16),
-                          child: Center(child: CircularProgressIndicator()),
-                        );
-                      }
-                      return const SizedBox.shrink();
-                    }
-                    final position = portfolio.positions[index];
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 16),
-                      child: PositionRow(
-                        position: position,
-                        onBuy: () => Navigator.of(context).pushNamed('order.sheet',
-                            arguments: {'assetId': position.assetId, 'side': 'buy'}),
-                        onSell: () => Navigator.of(context).pushNamed('order.sheet',
-                            arguments: {'assetId': position.assetId, 'side': 'sell'}),
-                      ),
-                    );
-                  },
-                  childCount: portfolio.positions.length + 1,
+                child: wrapContent(
+                  Text(strings.t('positions'),
+                      style: Theme.of(context).textTheme.h2.copyWith(fontWeight: FontWeight.w700)),
                 ),
               ),
             ),
             SliverPadding(
-              padding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
+              padding: horizontalPadding(),
               sliver: SliverToBoxAdapter(
-                child: Text(strings.t('tokens_stocks'),
-                    style: Theme.of(context).textTheme.h2.copyWith(fontWeight: FontWeight.w700)),
+                child: wrapContent(
+                  ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemBuilder: (context, index) {
+                      if (index >= portfolio.positions.length) {
+                        if (portfolio.hasMore && !portfolio.isLoadingMore) {
+                          portfolio.loadMore();
+                        }
+                        if (portfolio.isLoadingMore) {
+                          return const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 16),
+                            child: Center(child: CircularProgressIndicator()),
+                          );
+                        }
+                        return const SizedBox.shrink();
+                      }
+                      final position = portfolio.positions[index];
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 16),
+                        child: PositionRow(
+                          position: position,
+                          onBuy: () => Navigator.of(context).pushNamed('order.sheet',
+                              arguments: {'assetId': position.assetId, 'side': 'buy'}),
+                          onSell: () => Navigator.of(context).pushNamed('order.sheet',
+                              arguments: {'assetId': position.assetId, 'side': 'sell'}),
+                        ),
+                      );
+                    },
+                    itemCount: portfolio.positions.length + 1,
+                  ),
+                ),
               ),
             ),
             SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              sliver: SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    if (index >= market.top.length) {
-                      if (market.hasMoreTop && !market.isLoadingMoreTop) {
-                        market.loadMoreTop();
+              padding: horizontalPadding(),
+              sliver: SliverToBoxAdapter(
+                child: wrapContent(
+                  Text(strings.t('tokens_stocks'),
+                      style: Theme.of(context).textTheme.h2.copyWith(fontWeight: FontWeight.w700)),
+                ),
+              ),
+            ),
+            SliverPadding(
+              padding: horizontalPadding(),
+              sliver: SliverToBoxAdapter(
+                child: wrapContent(
+                  ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemBuilder: (context, index) {
+                      if (index >= market.top.length) {
+                        if (market.hasMoreTop && !market.isLoadingMoreTop) {
+                          market.loadMoreTop();
+                        }
+                        if (market.isLoadingMoreTop) {
+                          return const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 16),
+                            child: Center(child: CircularProgressIndicator()),
+                          );
+                        }
+                        return const SizedBox.shrink();
                       }
-                      if (market.isLoadingMoreTop) {
-                        return const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 16),
-                          child: Center(child: CircularProgressIndicator()),
-                        );
-                      }
-                      return const SizedBox.shrink();
-                    }
-                    final item = market.top[index];
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
-                      child: AssetRow(
-                        asset: item.asset,
-                        quote: item.quote,
-                        onTap: () => Navigator.of(context)
-                            .pushNamed('asset.details', arguments: item.asset.id),
-                        onToggleWatch: () => market.toggleWatch(item.asset.id),
-                        isWatched: market.isWatched(item.asset.id),
+                      final item = market.top[index];
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: AssetRow(
+                          asset: item.asset,
+                          quote: item.quote,
+                          onTap: () => Navigator.of(context)
+                              .pushNamed('asset.details', arguments: item.asset.id),
+                          onToggleWatch: () => market.toggleWatch(item.asset.id),
+                          isWatched: market.isWatched(item.asset.id),
+                        ),
+                      );
+                    },
+                    itemCount: market.top.length + 1,
+                  ),
+                ),
+              ),
+            ),
+            SliverPadding(
+              padding: horizontalPadding(),
+              sliver: SliverToBoxAdapter(
+                child: wrapContent(
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        strings.t('pro_features'),
+                        style:
+                            Theme.of(context).textTheme.h2.copyWith(fontWeight: FontWeight.w700),
                       ),
-                    );
-                  },
-                  childCount: market.top.length + 1,
+                      const SizedBox(height: 16),
+                      const FeatureShowcase(),
+                    ],
+                  ),
                 ),
               ),
             ),

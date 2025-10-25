@@ -32,12 +32,22 @@ class _MarketBrowseScreenState extends State<MarketBrowseScreen> {
   Widget build(BuildContext context) {
     final market = context.watchController<MarketController>();
     final strings = AppLocalizations.of(context);
-    _searchController.text = market.searchQuery;
+    if (_searchController.text != market.searchQuery) {
+      _searchController.value = TextEditingValue(
+        text: market.searchQuery,
+        selection: TextSelection.collapsed(offset: market.searchQuery.length),
+      );
+    }
 
     return Scaffold(
       appBar: AppBar(
         title: Text(strings.t('market')),
         actions: [
+          IconButton(
+            onPressed: () => Navigator.of(context).pushNamed('asset.compare'),
+            icon: const FaIcon(FontAwesomeIcons.scaleBalanced),
+            tooltip: strings.t('compare_assets'),
+          ),
           IconButton(onPressed: () => Navigator.of(context).pushNamed('search'), icon: const FaIcon(FontAwesomeIcons.magnifyingGlass)),
         ],
       ),
