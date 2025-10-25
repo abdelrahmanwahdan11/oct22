@@ -1,49 +1,50 @@
 import 'package:flutter/material.dart';
 
-import '../data/models/user.dart';
+class AuthUser {
+  const AuthUser({required this.id, required this.name});
+
+  final String id;
+  final String name;
+}
 
 class AuthController extends ChangeNotifier {
-  User? _user;
+  AuthUser? _user;
+  bool _loading = false;
 
-  User? get user => _user;
+  AuthUser? get user => _user;
   bool get isAuthenticated => _user != null;
+  bool get isLoading => _loading;
 
-  void login({required String email, required String password}) {
-    _user = User(
-      id: email,
-      name: email.split('@').first,
-      email: email,
-      avatar: 'https://i.pravatar.cc/150?u=$email',
-    );
+  Future<void> login({required String email, required String password}) async {
+    _setLoading(true);
+    await Future<void>.delayed(const Duration(milliseconds: 600));
+    _user = AuthUser(id: 'user_${email.hashCode}', name: email.split('@').first);
+    _setLoading(false);
+  }
+
+  Future<void> continueAsGuest() async {
+    _user = const AuthUser(id: 'guest', name: 'Guest');
     notifyListeners();
   }
 
-  void register({
+  Future<void> register({
     required String name,
     required String email,
-    required String phone,
-  }) {
-    _user = User(
-      id: email,
-      name: name,
-      email: email,
-      phone: phone,
-      avatar: 'https://i.pravatar.cc/150?u=$email',
-    );
-    notifyListeners();
-  }
-
-  void continueAsGuest() {
-    _user = const User(
-      id: 'guest',
-      name: 'Guest',
-      email: 'guest@realestate.plus',
-    );
-    notifyListeners();
+    required String password,
+  }) async {
+    _setLoading(true);
+    await Future<void>.delayed(const Duration(milliseconds: 800));
+    _user = AuthUser(id: 'user_${email.hashCode}', name: name);
+    _setLoading(false);
   }
 
   void logout() {
     _user = null;
+    notifyListeners();
+  }
+
+  void _setLoading(bool value) {
+    _loading = value;
     notifyListeners();
   }
 }
