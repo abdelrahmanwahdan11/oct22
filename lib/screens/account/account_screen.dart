@@ -1,111 +1,64 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
-import '../../controllers/auth_controller.dart';
 import '../../controllers/settings_controller.dart';
 import '../../core/localization/app_localizations.dart';
 import '../../core/providers/notifier_provider.dart';
-import '../../core/theme/app_theme.dart';
-import '../../widgets/components/app_bottom_navigation.dart';
+import '../shared/tradex_bottom_nav.dart';
 
 class AccountScreen extends StatelessWidget {
   const AccountScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final strings = AppLocalizations.of(context);
     final settings = NotifierProvider.of<SettingsController>(context);
-    final auth = NotifierProvider.of<AuthController>(context);
-    final user = auth.user;
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(strings.t('account')),
-      ),
-      bottomNavigationBar: const AppBottomNavigation(current: 'account'),
-      body: Container(
-        decoration: AppDecorations.gradientBackground(dark: settings.isDarkMode),
-        child: ListView(
-          padding: const EdgeInsets.all(24),
-          children: [
-            Row(
-              children: [
-                CircleAvatar(
-                  radius: 36,
-                  backgroundImage: NetworkImage(
-                    user?.avatar ?? 'https://i.pravatar.cc/150?img=12',
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      user?.name ?? 'Ahmad',
-                      style: Theme.of(context)
-                          .textTheme
-                          .titleLarge
-                          ?.copyWith(fontWeight: FontWeight.w700),
-                    ),
-                    Text(user?.email ?? 'ahmad@example.com'),
-                  ],
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
-            ListTile(
-              leading: const FaIcon(FontAwesomeIcons.clock, size: 18),
-              title: Text(strings.t('recent')),
-              onTap: () {},
-            ),
-            SwitchListTile.adaptive(
-              secondary: const FaIcon(FontAwesomeIcons.moon, size: 18),
-              title: Text(strings.t('dark_mode')),
-              value: settings.isDarkMode,
-              onChanged: (value) => settings.toggleDarkMode(value),
-            ),
-            ListTile(
-              leading: const FaIcon(FontAwesomeIcons.language, size: 18),
-              title: Text(strings.t('language')),
-              onTap: () => _selectLocale(context, settings),
-            ),
-            ListTile(
-              leading: const FaIcon(FontAwesomeIcons.gear, size: 18),
-              title: Text(strings.t('settings')),
-              onTap: () => Navigator.of(context).pushNamed('settings'),
-            ),
-            ListTile(
-              leading: const FaIcon(FontAwesomeIcons.arrowRightFromBracket, size: 18),
-              title: Text(strings.t('logout')),
-              onTap: () {
-                auth.logout();
-                Navigator.of(context).pushReplacementNamed('auth.login');
-              },
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _selectLocale(BuildContext context, SettingsController settings) {
     final strings = AppLocalizations.of(context);
-    showModalBottomSheet(
-      context: context,
-      builder: (context) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: AppLocalizations.supportedLocales
-              .map(
-                (locale) => ListTile(
-                  title: Text(locale.languageCode == 'ar' ? 'العربية' : 'English'),
-                  onTap: () {
-                    settings.setLocale(locale);
-                    Navigator.of(context).pop();
-                  },
-                ),
-              )
-              .toList(),
-        ),
+    final isDark = settings.themeMode == ThemeMode.dark;
+    return Scaffold(
+      appBar: AppBar(title: Text(strings.t('account'))),
+      bottomNavigationBar: const TradeXBottomNav(currentIndex: 4),
+      body: ListView(
+        padding: const EdgeInsets.all(24),
+        children: [
+          Row(
+            children: [
+              const CircleAvatar(
+                radius: 36,
+                backgroundImage: NetworkImage('https://i.pravatar.cc/150?img=8'),
+              ),
+              const SizedBox(width: 16),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Ahmad', style: Theme.of(context).textTheme.h2.copyWith(fontWeight: FontWeight.w700)),
+                  const SizedBox(height: 6),
+                  Text('ahmad@example.com', style: Theme.of(context).textTheme.bodyMedium),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 32),
+          SwitchListTile.adaptive(
+            value: isDark,
+            title: Text(strings.t('dark_mode')),
+            secondary: const FaIcon(FontAwesomeIcons.moon),
+            onChanged: (value) => settings.toggleDarkMode(value),
+          ),
+          ListTile(
+            leading: const FaIcon(FontAwesomeIcons.language),
+            title: Text(strings.t('language')),
+            trailing: Text(settings.locale.languageCode.toUpperCase()),
+            onTap: () {
+              final newLocale = settings.locale.languageCode == 'ar' ? const Locale('en') : const Locale('ar');
+              settings.setLocale(newLocale);
+            },
+          ),
+          ListTile(
+            leading: const FaIcon(FontAwesomeIcons.gear),
+            title: Text(strings.t('settings')),
+            onTap: () => Navigator.of(context).pushNamed('settings'),
+          ),
+        ],
       ),
     );
   }

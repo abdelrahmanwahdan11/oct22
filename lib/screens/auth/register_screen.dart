@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../controllers/auth_controller.dart';
+import '../../controllers/settings_controller.dart';
 import '../../core/localization/app_localizations.dart';
 import '../../core/providers/notifier_provider.dart';
-import '../../core/utils/animations.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -21,6 +20,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _passwordController = TextEditingController();
   final _confirmController = TextEditingController();
 
+  bool _autoValidate = false;
+
   @override
   void dispose() {
     _nameController.dispose();
@@ -31,89 +32,119 @@ class _RegisterScreenState extends State<RegisterScreen> {
     super.dispose();
   }
 
-  void _submit() {
-    if (!(_formKey.currentState?.validate() ?? false)) return;
-    final auth = NotifierProvider.read<AuthController>(context);
-    auth.register(
-      name: _nameController.text,
-      email: _emailController.text,
-      phone: _phoneController.text,
-    );
-    Navigator.of(context).pushReplacementNamed('home');
-  }
-
   @override
   Widget build(BuildContext context) {
     final strings = AppLocalizations.of(context);
+    final auth = NotifierProvider.of<AuthController>(context);
+    final settings = NotifierProvider.of<SettingsController>(context);
     return Scaffold(
-      appBar: AppBar(
-        title: Text(strings.t('create_account')),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              TextFormField(
-                controller: _nameController,
-                decoration: InputDecoration(
-                  labelText: strings.t('name_hint'),
-                  prefixIcon: const FaIcon(FontAwesomeIcons.user, size: 16),
+      appBar: AppBar(title: Text(strings.t('register'))),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: Form(
+            key: _formKey,
+            autovalidateMode:
+                _autoValidate ? AutovalidateMode.always : AutovalidateMode.disabled,
+            child: Column(
+              children: [
+                TextFormField(
+                  controller: _nameController,
+                  decoration: InputDecoration(labelText: strings.t('full_name')),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return strings.t('required_field');
+                    }
+                    if (value.length < 2) {
+                      return 'Too short';
+                    }
+                    return null;
+                  },
                 ),
-                validator: (value) =>
-                    value != null && value.length >= 2 ? null : strings.t('name_hint'),
-              ).fadeMove(),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _emailController,
-                decoration: InputDecoration(
-                  labelText: strings.t('email_hint'),
-                  prefixIcon: const FaIcon(FontAwesomeIcons.solidEnvelope, size: 16),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _emailController,
+                  decoration: InputDecoration(labelText: strings.t('email')),
+                  keyboardType: TextInputType.emailAddress,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return strings.t('required_field');
+                    }
+                    if (!value.contains('@')) {
+                      return strings.t('invalid_email');
+                    }
+                    return null;
+                  },
                 ),
-                validator: (value) =>
-                    value != null && value.contains('@') ? null : strings.t('email_hint'),
-              ).fadeMove(delay: 80),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _phoneController,
-                keyboardType: TextInputType.phone,
-                decoration: InputDecoration(
-                  labelText: strings.t('phone_hint'),
-                  prefixIcon: const FaIcon(FontAwesomeIcons.phone, size: 16),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _phoneController,
+                  decoration: const InputDecoration(labelText: 'Phone'),
+                  keyboardType: TextInputType.phone,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return strings.t('required_field');
+                    }
+                    if (value.length < 8) {
+                      return 'Min 8 digits';
+                    }
+                    return null;
+                  },
                 ),
-                validator: (value) =>
-                    value != null && value.length >= 8 ? null : strings.t('phone_hint'),
-              ).fadeMove(delay: 120),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _passwordController,
-                obscureText: true,
-                decoration: InputDecoration(
-                  labelText: strings.t('password_hint'),
-                  prefixIcon: const FaIcon(FontAwesomeIcons.lock, size: 16),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _passwordController,
+                  decoration: InputDecoration(labelText: strings.t('password')),
+                  obscureText: true,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return strings.t('required_field');
+                    }
+                    if (value.length < 6) {
+                      return 'Min 6 characters';
+                    }
+                    return null;
+                  },
                 ),
-                validator: (value) =>
-                    value != null && value.length >= 6 ? null : strings.t('password_hint'),
-              ).fadeMove(delay: 160),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _confirmController,
-                obscureText: true,
-                decoration: InputDecoration(
-                  labelText: strings.t('confirm_password_hint'),
-                  prefixIcon: const FaIcon(FontAwesomeIcons.lock, size: 16),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _confirmController,
+                  decoration: InputDecoration(labelText: strings.t('confirm_password')),
+                  obscureText: true,
+                  validator: (value) {
+                    if (value != _passwordController.text) {
+                      return strings.t('password_mismatch');
+                    }
+                    return null;
+                  },
                 ),
-                validator: (value) => value == _passwordController.text
-                    ? null
-                    : strings.t('confirm_password_hint'),
-              ).fadeMove(delay: 200),
-              const SizedBox(height: 24),
-              FilledButton(
-                onPressed: _submit,
-                child: Text(strings.t('register')),
-              ).fadeMove(delay: 240),
-            ],
+                const SizedBox(height: 24),
+                FilledButton(
+                  onPressed: () async {
+                    final valid = _formKey.currentState?.validate() ?? false;
+                    if (!valid) {
+                      setState(() => _autoValidate = true);
+                      return;
+                    }
+                    await auth.register(
+                      name: _nameController.text.trim(),
+                      email: _emailController.text.trim(),
+                      password: _passwordController.text,
+                    );
+                    await settings.completeOnboarding();
+                    if (!mounted) return;
+                    Navigator.of(context)
+                        .pushNamedAndRemoveUntil('portfolio.home', (route) => false);
+                  },
+                  child: Text(strings.t('register')),
+                ),
+                const SizedBox(height: 12),
+                TextButton(
+                  onPressed: () => Navigator.of(context).pushReplacementNamed('auth.login'),
+                  child: Text(strings.t('login')),
+                ),
+              ],
+            ),
           ),
         ),
       ),
