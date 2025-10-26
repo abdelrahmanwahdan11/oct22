@@ -186,6 +186,15 @@ class _DashboardView extends StatelessWidget {
                               .toList(),
                         ),
                       const SizedBox(height: 24),
+                      Text(
+                        l10n.translate('immersive_experiences'),
+                        style: Theme.of(context).textTheme.headlineMedium,
+                      ),
+                      const SizedBox(height: 12),
+                      _ExperienceGrid(onTap: (route) {
+                        Navigator.of(context).pushNamed(route);
+                      }),
+                      const SizedBox(height: 24),
                       Text(l10n.translate('for_you'),
                           style: Theme.of(context).textTheme.headlineMedium),
                       const SizedBox(height: 12),
@@ -219,6 +228,153 @@ class _DashboardView extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+}
+
+class _ExperienceGrid extends StatelessWidget {
+  const _ExperienceGrid({required this.onTap});
+
+  final void Function(String route) onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final cards = [
+      _ExperienceCard(
+        title: AppLocalizations.of(context).translate('trainers_experience'),
+        subtitle: AppLocalizations.of(context).translate('trainers_experience_desc'),
+        image: 'https://images.unsplash.com/photo-1597076537063-5d0c4d8f8b74',
+        route: AppRoutes.trainers,
+        icon: FontAwesomeIcons.userNinja,
+      ),
+      _ExperienceCard(
+        title: AppLocalizations.of(context).translate('store_experience'),
+        subtitle: AppLocalizations.of(context).translate('store_experience_desc'),
+        image: 'https://images.unsplash.com/photo-1595433707802-6b2626f3f1a4',
+        route: AppRoutes.store,
+        icon: FontAwesomeIcons.basketShopping,
+      ),
+      _ExperienceCard(
+        title: AppLocalizations.of(context).translate('pass_experience'),
+        subtitle: AppLocalizations.of(context).translate('pass_experience_desc'),
+        image: 'https://images.unsplash.com/photo-1582719478185-ff61da3d5f3f',
+        route: AppRoutes.multiClubPass,
+        icon: FontAwesomeIcons.ticket,
+      ),
+    ];
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isWide = constraints.maxWidth > 520;
+        return Wrap(
+          spacing: 16,
+          runSpacing: 16,
+          children: cards
+              .map(
+                (card) => SizedBox(
+                  width: isWide ? (constraints.maxWidth - 16) / 2 : constraints.maxWidth,
+                  child: _ExperienceCardTile(card: card, onTap: onTap),
+                ),
+              )
+              .toList(),
+        );
+      },
+    );
+  }
+}
+
+class _ExperienceCard {
+  const _ExperienceCard({
+    required this.title,
+    required this.subtitle,
+    required this.image,
+    required this.route,
+    required this.icon,
+  });
+
+  final String title;
+  final String subtitle;
+  final String image;
+  final String route;
+  final IconData icon;
+}
+
+class _ExperienceCardTile extends StatelessWidget {
+  const _ExperienceCardTile({required this.card, required this.onTap});
+
+  final _ExperienceCard card;
+  final void Function(String route) onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => onTap(card.route),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(28),
+          gradient: LinearGradient(
+            colors: [
+              Theme.of(context).colorScheme.surface.withOpacity(0.92),
+              Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.65),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          border: Border.all(color: Theme.of(context).colorScheme.primary.withOpacity(0.12)),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: Image.network(
+                card.image,
+                fit: BoxFit.cover,
+                color: Colors.black.withOpacity(0.35),
+                colorBlendMode: BlendMode.darken,
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(24),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.primary.withOpacity(0.18),
+                      borderRadius: BorderRadius.circular(18),
+                    ),
+                    child: FaIcon(card.icon, color: Colors.white),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          card.title,
+                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w700,
+                              ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          card.subtitle,
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                color: Colors.white70,
+                              ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  const FaIcon(FontAwesomeIcons.arrowRightLong, color: Colors.white70),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ).animate().fadeIn(260.ms).moveY(begin: 12, end: 0),
     );
   }
 }

@@ -5,10 +5,14 @@ import '../../screens/auth/login_screen.dart';
 import '../../screens/discover/discover_screen.dart';
 import '../../screens/home/home_screen.dart';
 import '../../screens/onboarding/onboarding_screen.dart';
+import '../../screens/pass/multi_club_pass_screen.dart';
 import '../../screens/plan/plan_screen.dart';
 import '../../screens/profile/profile_screen.dart';
+import '../../screens/store/store_screen.dart';
 import '../../screens/supplement/supplement_details_screen.dart';
 import '../../screens/survey/survey_screen.dart';
+import '../../screens/trainers/trainer_registration_screen.dart';
+import '../../screens/trainers/trainers_screen.dart';
 
 class AppRoutes {
   static const onboarding = 'onboarding';
@@ -25,6 +29,10 @@ class AppRoutes {
   static const reminderSheet = 'reminder.sheet';
   static const filtersSheet = 'filters.sheet';
   static const search = 'search';
+  static const trainers = 'trainers';
+  static const trainerRegistration = 'trainers.register';
+  static const store = 'store';
+  static const multiClubPass = 'pass.multi';
 }
 
 Route<dynamic>? onGenerateRoute(RouteSettings settings) {
@@ -41,6 +49,14 @@ Route<dynamic>? onGenerateRoute(RouteSettings settings) {
       return _buildPage(settings, const PlanScreen());
     case AppRoutes.profile:
       return _buildPage(settings, const ProfileScreen());
+    case AppRoutes.trainers:
+      return _buildPage(settings, const TrainersScreen());
+    case AppRoutes.store:
+      return _buildPage(settings, const StoreScreen());
+    case AppRoutes.multiClubPass:
+      return _buildPage(settings, const MultiClubPassScreen());
+    case AppRoutes.trainerRegistration:
+      return _buildModal(settings, const TrainerRegistrationScreen());
     case AppRoutes.supplementDetails:
       return _buildPage(
         settings,
