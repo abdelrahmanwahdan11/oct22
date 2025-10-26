@@ -1,109 +1,125 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 
-import '../../screens/account/account_screen.dart';
-import '../../screens/asset/asset_details_screen.dart';
-import '../../screens/asset/order_sheet.dart';
-import '../../screens/auth/forgot_screen.dart';
 import '../../screens/auth/login_screen.dart';
-import '../../screens/auth/register_screen.dart';
-import '../../screens/filters/filters_sheet.dart';
-import '../../screens/market/market_browse_screen.dart';
-import '../../screens/market/prices_fxmetals_screen.dart';
-import '../../screens/market/search_screen.dart';
-import '../../screens/news/news_center_screen.dart';
+import '../../screens/discover/discover_screen.dart';
+import '../../screens/home/home_screen.dart';
 import '../../screens/onboarding/onboarding_screen.dart';
-import '../../screens/portfolio/portfolio_home_screen.dart';
-import '../../screens/settings/settings_screen.dart';
-import '../../screens/transfer/transfer_exchange_screen.dart';
-import '../../screens/transfer/transfer_receive_screen.dart';
-import '../../screens/transfer/transfer_send_screen.dart';
-import '../../screens/watchlist/watchlist_screen.dart';
+import '../../screens/plan/plan_screen.dart';
+import '../../screens/profile/profile_screen.dart';
+import '../../screens/supplement/supplement_details_screen.dart';
+import '../../screens/survey/survey_screen.dart';
 
-class AppRouter {
-  Route<dynamic>? onGenerateRoute(RouteSettings settings) {
-    final name = settings.name;
-    switch (name) {
-      case '/':
-      case 'onboarding':
-        return _default(settings, const OnboardingScreen());
-      case 'auth.login':
-        return _default(settings, const LoginScreen());
-      case 'auth.register':
-        return _default(settings, const RegisterScreen());
-      case 'auth.forgot':
-        return _default(settings, const ForgotPasswordScreen());
-      case 'portfolio.home':
-        return _default(settings, const PortfolioHomeScreen());
-      case 'market.browse':
-        return _default(settings, const MarketBrowseScreen());
-      case 'prices.fxmetals':
-        return _default(settings, const PricesFxMetalsScreen());
-      case 'asset.details':
-        final id = settings.arguments as String?;
-        if (id == null) return null;
-        return _default(settings, AssetDetailsScreen(assetId: id));
-      case 'order.sheet':
-        final args = settings.arguments as Map<String, dynamic>?;
-        if (args == null) return null;
-        return _modal(settings, OrderSheet(
-          assetId: args['assetId'] as String,
-          initialSide: (args['side'] as String?) ?? 'buy',
-        ));
-      case 'transfer.send':
-        return _default(settings, const TransferSendScreen());
-      case 'transfer.receive':
-        return _default(settings, const TransferReceiveScreen());
-      case 'transfer.exchange':
-        return _default(settings, const TransferExchangeScreen());
-      case 'watchlist':
-        return _default(settings, const WatchlistScreen());
-      case 'news.center':
-        return _default(settings, const NewsCenterScreen());
-      case 'search':
-        return _default(settings, const MarketSearchScreen());
-      case 'filters.sheet':
-        return _modal(settings, const FiltersSheet());
-      case 'account':
-        return _default(settings, const AccountScreen());
-      case 'settings':
-        return _default(settings, const SettingsScreen());
-      default:
-        return null;
-    }
-  }
+class AppRoutes {
+  static const onboarding = 'onboarding';
+  static const login = 'auth.login';
+  static const register = 'auth.register';
+  static const forgot = 'auth.forgot';
+  static const dashboard = 'home.dashboard';
+  static const discover = 'discover.for_you';
+  static const supplementDetails = 'supplement.details';
+  static const survey = 'survey.monthly';
+  static const planToday = 'plan.today';
+  static const profile = 'profile';
+  static const settings = 'settings';
+  static const reminderSheet = 'reminder.sheet';
+  static const filtersSheet = 'filters.sheet';
+  static const search = 'search';
+}
 
-  PageRoute<dynamic> _default(RouteSettings settings, Widget child) {
-    return PageRouteBuilder(
-      settings: settings,
-      pageBuilder: (context, animation, secondaryAnimation) => child,
-      transitionsBuilder: (context, animation, secondaryAnimation, child) {
-        final tween = Tween(begin: const Offset(0, 0.06), end: Offset.zero)
-            .chain(CurveTween(curve: Curves.easeOut));
-        return FadeTransition(
-          opacity: animation,
-          child: SlideTransition(position: animation.drive(tween), child: child),
-        );
-      },
-    );
+Route<dynamic>? onGenerateRoute(RouteSettings settings) {
+  switch (settings.name) {
+    case AppRoutes.onboarding:
+      return _buildPage(settings, const OnboardingScreen());
+    case AppRoutes.login:
+      return _buildPage(settings, const LoginScreen());
+    case AppRoutes.dashboard:
+      return _buildPage(settings, const HomeScreen());
+    case AppRoutes.discover:
+      return _buildPage(settings, const DiscoverScreen());
+    case AppRoutes.planToday:
+      return _buildPage(settings, const PlanScreen());
+    case AppRoutes.profile:
+      return _buildPage(settings, const ProfileScreen());
+    case AppRoutes.supplementDetails:
+      return _buildPage(
+        settings,
+        SupplementDetailsScreen(
+          supplementId: (settings.arguments as Map?)?['id'] as String?,
+        ),
+      );
+    case AppRoutes.survey:
+      return _buildModal(settings, const SurveyScreen());
+    default:
+      return _buildPage(settings, const HomeScreen());
   }
+}
 
-  PageRoute<dynamic> _modal(RouteSettings settings, Widget child) {
-    return PageRouteBuilder(
-      settings: settings,
-      opaque: false,
-      barrierDismissible: true,
-      barrierColor: Colors.black54,
-      pageBuilder: (context, animation, secondaryAnimation) {
-        return FadeTransition(
-          opacity: animation,
-          child: SlideTransition(
-            position: Tween(begin: const Offset(0, 0.1), end: Offset.zero)
-                .chain(CurveTween(curve: Curves.easeOut))
-                .animate(animation),
-            child: child,
-          ),
-        );
-      },
-    );
-  }
+PageRouteBuilder<dynamic> _buildPage(RouteSettings settings, Widget child) {
+  return PageRouteBuilder<dynamic>(
+    settings: settings,
+    pageBuilder: (context, animation, secondaryAnimation) =>
+        _AnimatedPage(animation: animation, child: child),
+    transitionsBuilder: _fadeSlideTransition,
+  );
+}
+
+PageRouteBuilder<dynamic> _buildModal(RouteSettings settings, Widget child) {
+  return PageRouteBuilder<dynamic>(
+    settings: settings,
+    opaque: false,
+    barrierDismissible: true,
+    barrierColor: Colors.black26,
+    pageBuilder: (context, animation, secondaryAnimation) =>
+        Align(alignment: Alignment.bottomCenter, child: child),
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      final curved = CurvedAnimation(parent: animation, curve: Curves.easeOut);
+      final slide = Tween<Offset>(
+        begin: const Offset(0, 0.1),
+        end: Offset.zero,
+      ).animate(curved);
+      final fade = Tween<double>(begin: 0, end: 1).animate(curved);
+      return FadeTransition(
+        opacity: fade,
+        child: SlideTransition(position: slide, child: child),
+      );
+    },
+  );
+}
+
+Widget _AnimatedPage({required Animation<double> animation, required Widget child}) {
+  return AnimatedBuilder(
+    animation: animation,
+    builder: (context, _) {
+      final fade = CurvedAnimation(parent: animation, curve: Curves.easeOut);
+      final slide = Tween<Offset>(
+        begin: const Offset(0, 0.06),
+        end: Offset.zero,
+      ).animate(fade);
+      return FadeTransition(
+        opacity: fade,
+        child: SlideTransition(
+          position: slide,
+          child: child,
+        ),
+      ).animate().fadeIn(duration: 260.ms);
+    },
+  );
+}
+
+Widget _fadeSlideTransition(
+  BuildContext context,
+  Animation<double> animation,
+  Animation<double> secondaryAnimation,
+  Widget child,
+) {
+  final curved = CurvedAnimation(parent: animation, curve: Curves.easeOut);
+  return FadeTransition(
+    opacity: curved,
+    child: SlideTransition(
+      position: Tween<Offset>(begin: const Offset(0, 0.06), end: Offset.zero)
+          .animate(curved),
+      child: child,
+    ),
+  );
 }
