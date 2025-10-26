@@ -1,58 +1,278 @@
-import 'dart:convert';
+import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 class AppLocalizations {
   AppLocalizations(this.locale);
 
   final Locale locale;
-  late final Map<String, String> _strings;
 
   static const supportedLocales = [Locale('ar'), Locale('en')];
-  static const defaultLocale = Locale('ar');
 
-  static Future<AppLocalizations> load(Locale locale) async {
-    final data = await rootBundle
-        .loadString('assets/l10n/${locale.languageCode}.json')
-        .catchError((_) => rootBundle
-            .loadString('assets/l10n/${defaultLocale.languageCode}.json'));
-    final map = json.decode(data) as Map<String, dynamic>;
-    final loc = AppLocalizations(locale);
-    loc._strings = map.map((key, value) => MapEntry(key, value.toString()));
-    return loc;
-  }
+  static const _localizedValues = <String, Map<String, String>>{
+    'ar': {
+      'app_name': 'Luma+ Wellness',
+      'for_you': 'مقترح لك',
+      'energy': 'الطاقة',
+      'heart': 'صحة القلب',
+      'stress': 'التوتر',
+      'learn_more': 'اعرف المزيد',
+      'add_to_plan': 'أضف للخطة',
+      'today_plan': 'خطة اليوم',
+      'your_progress': 'تقدمك',
+      'essentials': 'مكملات أساسية',
+      'survey_q': 'كيف كان شعورك هذا الشهر؟',
+      'skip': 'تخطي',
+      'continue': 'متابعة',
+      'start': 'ابدأ',
+      'remind_me': 'ذكّرني',
+      'take_now': 'خذ الآن',
+      'discover': 'استكشف',
+      'plan': 'الخطة',
+      'profile': 'الملف الشخصي',
+      'home': 'الرئيسية',
+      'welcome_back': 'مرحباً بعودتك',
+      'sign_in': 'تسجيل الدخول',
+      'email': 'البريد الإلكتروني',
+      'password': 'كلمة المرور',
+      'login': 'دخول',
+      'continue_guest': 'دخول كضيف',
+      'create_account': 'إنشاء حساب جديد',
+      'feeling_today': 'كيف تشعر اليوم؟',
+      'daily_plan': 'خطة اليوم',
+      'progress_wheel': 'عجلة التقدم',
+      'view_all': 'عرض الكل',
+      'plan_empty': 'لم تضف أي مكملات بعد',
+      'mark_taken': 'تم تناولها',
+      'mark_skipped': 'تم التخطي',
+      'mark_pending': 'بانتظار',
+      'language': 'اللغة',
+      'theme': 'المظهر',
+      'dark_mode': 'الوضع الداكن',
+      'notifications': 'التذكيرات',
+      'settings': 'الإعدادات',
+      'survey': 'استبيان',
+      'mood': 'المزاج',
+      'energy_level': 'مستوى الطاقة',
+      'notes': 'ملاحظات',
+      'save': 'حفظ',
+      'search_hint': 'ابحث عن مكمل/فائدة…',
+      'filters': 'التصفية',
+      'recommendations': 'التوصيات',
+      'best_for': 'أفضل من أجل',
+      'benefits': 'الفوائد',
+      'ingredients': 'المكونات',
+      'dosage': 'الجرعة',
+      'schedule': 'الجدول',
+      'rating': 'التقييم',
+      'loading': 'جاري التحميل…',
+      'retry': 'إعادة المحاولة',
+      'see_plan': 'عرض الخطة',
+      'elite_trainers': 'مدربون نخبويون',
+      'register_as_trainer': 'سجل كمدرب',
+      'featured_trainers': 'مدربون مميزون',
+      'become_trainer_cta': 'أضف ملفك كمدرب',
+      'partner_clubs': 'أندية الشركاء',
+      'multi_pass_teaser_title': 'بطاقة Infinity Flex',
+      'multi_pass_teaser_desc': 'بطاقة متعددة الأندية تفتح حصصاً في الرياض، دبي، والدوحة مع خصومات مميزة.',
+      'train_with_champions': 'تدرّب مع أفضل المدربين',
+      'trainers_intro': 'استكشف جلسات شخصية، استشارات تغذية، وجدول حصص أسبوعي حسب أهدافك.',
+      'view_pass': 'استعرض البطاقة',
+      'next_availability': 'المواعيد القادمة',
+      'connected_clubs': 'الأندية المرتبطة',
+      'booking_request_sent': 'تم إرسال طلب الحجز',
+      'book_session': 'احجز جلسة',
+      'contact_trainer': 'تواصل مع المدرب',
+      'call_club': 'اتصل بالنادي',
+      'immersive_experiences': 'تجارب غامرة',
+      'trainers_experience': 'صفحة المدربين',
+      'trainers_experience_desc': 'تعرف على المدربين، تواصل معهم، واحجز حصتك المفضلة.',
+      'store_experience': 'متجر العافية',
+      'store_experience_desc': 'تسوق المكملات، المعدات، والعناية الشخصية بلمسة تصميمية.',
+      'pass_experience': 'بطاقة الأندية المتعددة',
+      'pass_experience_desc': 'اطلع على تفاصيل البطاقة وجدول الحصص الأسبوعي المتاح.',
+      'wellness_store': 'متجر العافية',
+      'curated_collections': 'مجموعات مختارة بعناية',
+      'store_hero_title': 'تسوق للياقتك بالكامل',
+      'store_hero_caption': 'مكملات ومعدات واستحمام بعد التمرين بخصومات للأعضاء.',
+      'category_supplements': 'مكملات',
+      'category_equipment': 'معدات',
+      'category_care': 'عناية شخصية',
+      'best_seller': 'الأكثر مبيعاً',
+      'added_to_cart': 'أضيفت إلى السلة',
+      'add_to_cart': 'أضف إلى السلة',
+      'multi_pass_title': 'بطاقة الأندية المتعددة',
+      'pass_perks': 'مزايا البطاقة',
+      'included_clubs': 'الأندية المشمولة',
+      'weekly_schedule': 'جدول الحصص الأسبوعي',
+      'pass_reserved': 'تم حجز البطاقة',
+      'subscribe_now': 'اشترك الآن',
+      'trainer_registration_title': 'انضم إلى شبكة المدربين',
+      'trainer_registration_caption': 'أرسل سيرتك واختصاصك ليظهر ملفك لمجتمع Luma+.',
+      'full_name': 'الاسم الكامل',
+      'specialty': 'التخصص',
+      'years_experience': 'سنوات الخبرة',
+      'spoken_languages': 'اللغات المتحدثة',
+      'bio': 'نبذة تعريفية',
+      'certifications': 'الشهادات',
+      'preferred_clubs': 'الأندية المفضلة',
+      'clubs_helper': 'افصل بين الأندية بفاصلة.',
+      'invalid_email': 'البريد غير صالح',
+      'phone': 'رقم الهاتف',
+      'submit_application': 'إرسال الطلب',
+      'submitting': 'جاري الإرسال…',
+      'application_received': 'تم استلام طلبك وسنتواصل قريباً.',
+      'feature_lab_title': 'مختبر أفكار الصحة',
+      'feature_lab_caption': '٦٠ فكرة مستقبلية لتوسيع تجربة العافية والرياضة في التطبيق.',
+    },
+    'en': {
+      'app_name': 'Luma+ Wellness',
+      'for_you': 'For You',
+      'energy': 'Energy',
+      'heart': 'Heart health',
+      'stress': 'Stress',
+      'learn_more': 'Learn more',
+      'add_to_plan': 'Add to plan',
+      'today_plan': "Today's Plan",
+      'your_progress': 'Your Progress',
+      'essentials': 'Essential Supplements',
+      'survey_q': 'How have you been feeling this month?',
+      'skip': 'Skip',
+      'continue': 'Continue',
+      'start': 'Start',
+      'remind_me': 'Remind me',
+      'take_now': 'Take now',
+      'discover': 'Discover',
+      'plan': 'Plan',
+      'profile': 'Profile',
+      'home': 'Home',
+      'welcome_back': 'Welcome back',
+      'sign_in': 'Sign in',
+      'email': 'Email',
+      'password': 'Password',
+      'login': 'Login',
+      'continue_guest': 'Continue as guest',
+      'create_account': 'Create account',
+      'feeling_today': 'How do you feel today?',
+      'daily_plan': "Today's Plan",
+      'progress_wheel': 'Progress wheel',
+      'view_all': 'View all',
+      'plan_empty': 'You have no supplements yet',
+      'mark_taken': 'Mark taken',
+      'mark_skipped': 'Mark skipped',
+      'mark_pending': 'Mark pending',
+      'language': 'Language',
+      'theme': 'Theme',
+      'dark_mode': 'Dark mode',
+      'notifications': 'Reminders',
+      'settings': 'Settings',
+      'survey': 'Survey',
+      'mood': 'Mood',
+      'energy_level': 'Energy level',
+      'notes': 'Notes',
+      'save': 'Save',
+      'search_hint': 'Search supplements/benefits…',
+      'filters': 'Filters',
+      'recommendations': 'Recommendations',
+      'best_for': 'Best for',
+      'benefits': 'Benefits',
+      'ingredients': 'Ingredients',
+      'dosage': 'Dosage',
+      'schedule': 'Schedule',
+      'rating': 'Rating',
+      'loading': 'Loading…',
+      'retry': 'Retry',
+      'see_plan': 'See plan',
+      'elite_trainers': 'Elite Trainers',
+      'register_as_trainer': 'Register as Trainer',
+      'featured_trainers': 'Featured coaches',
+      'become_trainer_cta': 'Submit your coaching profile',
+      'partner_clubs': 'Partner clubs',
+      'multi_pass_teaser_title': 'Infinity Flex Pass',
+      'multi_pass_teaser_desc': 'A multi-club membership unlocking Zumba, Aerobics, and recovery perks across cities.',
+      'train_with_champions': 'Train with champions',
+      'trainers_intro': 'Discover personal sessions, nutrition consults, and weekly class schedules tailored for you.',
+      'view_pass': 'View pass',
+      'next_availability': 'Next availability',
+      'connected_clubs': 'Connected clubs',
+      'booking_request_sent': 'Booking request sent',
+      'book_session': 'Book session',
+      'contact_trainer': 'Contact coach',
+      'call_club': 'Call the club',
+      'immersive_experiences': 'Immersive experiences',
+      'trainers_experience': 'Coaches hub',
+      'trainers_experience_desc': 'Meet the trainers, connect instantly, and reserve your next workout.',
+      'store_experience': 'Wellness store',
+      'store_experience_desc': 'Shop supplements, gear, and self-care essentials in one place.',
+      'pass_experience': 'Multi-club pass',
+      'pass_experience_desc': 'Review your pass benefits and weekly class mash-up schedule.',
+      'wellness_store': 'Wellness Store',
+      'curated_collections': 'Curated collections',
+      'store_hero_title': 'Shop your entire routine',
+      'store_hero_caption': 'Supplements, equipment, and post-workout care with member perks.',
+      'category_supplements': 'Supplements',
+      'category_equipment': 'Equipment',
+      'category_care': 'Self-care',
+      'best_seller': 'Best seller',
+      'added_to_cart': 'Added to cart',
+      'add_to_cart': 'Add to cart',
+      'multi_pass_title': 'Multi-club pass',
+      'pass_perks': 'Pass perks',
+      'included_clubs': 'Included clubs',
+      'weekly_schedule': 'Weekly schedule',
+      'pass_reserved': 'Pass reserved',
+      'subscribe_now': 'Subscribe now',
+      'trainer_registration_title': 'Join the coaching collective',
+      'trainer_registration_caption': 'Share your expertise and get featured in the Luma+ ecosystem.',
+      'full_name': 'Full name',
+      'specialty': 'Specialty',
+      'years_experience': 'Years of experience',
+      'spoken_languages': 'Spoken languages',
+      'bio': 'Bio',
+      'certifications': 'Certifications',
+      'preferred_clubs': 'Preferred clubs',
+      'clubs_helper': 'Separate clubs with a comma.',
+      'invalid_email': 'Email is invalid',
+      'phone': 'Phone number',
+      'submit_application': 'Submit application',
+      'submitting': 'Submitting…',
+      'application_received': 'Application received. We will be in touch soon!',
+      'feature_lab_title': 'Wellness innovation lab',
+      'feature_lab_caption': '60 forward-looking enhancements inspiring the next fitness era.',
+    },
+  };
 
   static AppLocalizations of(BuildContext context) {
-    return Localizations.of<AppLocalizations>(context, AppLocalizations) ??
-        (throw FlutterError('AppLocalizations not found in widget tree'));
+    return Localizations.of<AppLocalizations>(context, AppLocalizations)!;
   }
 
-  String t(String key) => _strings[key] ?? key;
+  String get languageCode => locale.languageCode;
 
-  bool get isRtl => locale.languageCode == 'ar';
+  String translate(String key) {
+    final values = _localizedValues[locale.languageCode] ?? _localizedValues['en']!;
+    return values[key] ?? key;
+  }
+
+  static const LocalizationsDelegate<AppLocalizations> delegate =
+      _AppLocalizationsDelegate();
 }
 
-class AppLocalizationsDelegate
+class _AppLocalizationsDelegate
     extends LocalizationsDelegate<AppLocalizations> {
-  const AppLocalizationsDelegate();
+  const _AppLocalizationsDelegate();
 
   @override
-  bool isSupported(Locale locale) =>
-      AppLocalizations.supportedLocales
-          .map((l) => l.languageCode)
-          .contains(locale.languageCode);
+  bool isSupported(Locale locale) {
+    return ['ar', 'en'].contains(locale.languageCode);
+  }
 
   @override
-  Future<AppLocalizations> load(Locale locale) => AppLocalizations.load(locale);
+  Future<AppLocalizations> load(Locale locale) {
+    return SynchronousFuture<AppLocalizations>(AppLocalizations(locale));
+  }
 
   @override
   bool shouldReload(covariant LocalizationsDelegate<AppLocalizations> old) =>
       false;
-}
-
-extension AppLocalizationExtension on BuildContext {
-  AppLocalizations get strings => AppLocalizations.of(this);
-
-  String t(String key) => strings.t(key);
 }

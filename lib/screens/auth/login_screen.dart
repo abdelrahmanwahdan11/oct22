@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
-import '../../controllers/auth_controller.dart';
-import '../../controllers/settings_controller.dart';
 import '../../core/localization/app_localizations.dart';
-import '../../core/providers/notifier_provider.dart';
+import '../../core/routing/app_router.dart';
+import '../../core/utils/app_scope.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -18,8 +17,6 @@ class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
-  bool _autoValidate = false;
-
   @override
   void dispose() {
     _emailController.dispose();
@@ -29,104 +26,93 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final strings = AppLocalizations.of(context);
-    final auth = NotifierProvider.of<AuthController>(context);
-    final settings = NotifierProvider.of<SettingsController>(context);
+    final l10n = AppLocalizations.of(context);
+    final settings = AppScope.of(context).settingsController;
+
     return Scaffold(
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(strings.t('login'), style: Theme.of(context).textTheme.h1),
-              const SizedBox(height: 24),
-              Form(
-                key: _formKey,
-                autovalidateMode:
-                    _autoValidate ? AutovalidateMode.always : AutovalidateMode.disabled,
-                child: Column(
-                  children: [
-                    TextFormField(
-                      controller: _emailController,
-                      decoration: InputDecoration(labelText: strings.t('email')),
-                      keyboardType: TextInputType.emailAddress,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return strings.t('required_field');
-                        }
-                        if (!value.contains('@')) {
-                          return strings.t('invalid_email');
-                        }
-                        return null;
-                      },
-                    ).animate().fadeIn(280.ms).moveY(begin: 16, end: 0),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      controller: _passwordController,
-                      decoration: InputDecoration(labelText: strings.t('password')),
-                      obscureText: true,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return strings.t('required_field');
-                        }
-                        if (value.length < 6) {
-                          return 'Min 6 characters';
-                        }
-                        return null;
-                      },
-                    ).animate().fadeIn(280.ms).moveY(begin: 16, end: 0),
-                    const SizedBox(height: 24),
-                    FilledButton(
-                      onPressed: auth.isLoading
-                          ? null
-                          : () async {
-                              final valid = _formKey.currentState?.validate() ?? false;
-                              if (!valid) {
-                                setState(() => _autoValidate = true);
-                                return;
-                              }
-                              await auth.login(
-                                email: _emailController.text.trim(),
-                                password: _passwordController.text,
-                              );
-                              await settings.completeOnboarding();
-                              if (!mounted) return;
-                              Navigator.of(context)
-                                  .pushNamedAndRemoveUntil('portfolio.home', (route) => false);
-                            },
-                      child: auth.isLoading
-                          ? const SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : Text(strings.t('login')),
-                    ),
-                    const SizedBox(height: 12),
-                    OutlinedButton(
-                      onPressed: () async {
-                        await auth.continueAsGuest();
-                        await settings.completeOnboarding();
-                        if (!mounted) return;
-                        Navigator.of(context)
-                            .pushNamedAndRemoveUntil('portfolio.home', (route) => false);
-                      },
-                      child: Text(strings.t('continue_guest')),
-                    ),
-                    const SizedBox(height: 16),
-                    TextButton(
-                      onPressed: () => Navigator.of(context).pushNamed('auth.register'),
-                      child: Text(strings.t('register')),
-                    ),
-                    TextButton(
-                      onPressed: () => Navigator.of(context).pushNamed('auth.forgot'),
-                      child: Text(strings.t('forgot_password')),
-                    ),
-                  ],
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Theme.of(context).canvasColor, Theme.of(context).scaffoldBackgroundColor],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Center(
+              child: SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        l10n.translate('welcome_back'),
+                        style: Theme.of(context).textTheme.displayLarge,
+                      ),
+                      const SizedBox(height: 12),
+                      Text(l10n.translate('sign_in')),
+                      const SizedBox(height: 32),
+                      TextFormField(
+                        controller: _emailController,
+                        keyboardType: TextInputType.emailAddress,
+                        decoration: InputDecoration(
+                          labelText: l10n.translate('email'),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Required';
+                          }
+                          if (!value.contains('@')) {
+                            return 'Invalid email';
+                          }
+                          return null;
+                        },
+                      ).animate().fadeIn(260.ms).moveY(begin: 14, end: 0),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _passwordController,
+                        obscureText: true,
+                        decoration: InputDecoration(
+                          labelText: l10n.translate('password'),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Required';
+                          }
+                          if (value.length < 6) {
+                            return 'Too short';
+                          }
+                          return null;
+                        },
+                      ).animate().fadeIn(260.ms).moveY(begin: 14, end: 0),
+                      const SizedBox(height: 24),
+                      FilledButton(
+                        onPressed: () async {
+                          if (_formKey.currentState?.validate() ?? false) {
+                            await settings.setOnboardingDone(true);
+                            if (context.mounted) {
+                              Navigator.of(context).pushReplacementNamed(AppRoutes.dashboard);
+                            }
+                          }
+                        },
+                        child: Text(l10n.translate('login')),
+                      ),
+                      const SizedBox(height: 12),
+                      OutlinedButton(
+                        onPressed: () {
+                          Navigator.of(context).pushReplacementNamed(AppRoutes.dashboard);
+                        },
+                        child: Text(l10n.translate('continue_guest')),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ],
+            ),
           ),
         ),
       ),

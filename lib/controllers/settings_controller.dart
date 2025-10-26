@@ -1,55 +1,62 @@
 import 'package:flutter/material.dart';
 
-import '../core/localization/app_localizations.dart';
 import '../data/repositories/prefs_repository.dart';
 
 class SettingsController extends ChangeNotifier {
-  SettingsController(this.prefsRepository);
+  SettingsController(this._prefsRepository);
 
-  final PrefsRepository prefsRepository;
+  final PrefsRepository _prefsRepository;
 
-  ThemeMode _themeMode = ThemeMode.dark;
-  Locale _locale = AppLocalizations.defaultLocale;
-  bool _onboardingComplete = false;
+  ThemeMode _themeMode = ThemeMode.light;
+  Locale _locale = const Locale('ar');
+  bool _remindersEnabled = true;
+  bool _onboardingDone = false;
 
   ThemeMode get themeMode => _themeMode;
   Locale get locale => _locale;
-  bool get onboardingComplete => _onboardingComplete;
+  bool get remindersEnabled => _remindersEnabled;
+  bool get onboardingDone => _onboardingDone;
 
   Future<void> load() async {
-    await prefsRepository.init();
-    _themeMode = prefsRepository.loadThemeMode();
-    _locale = prefsRepository.loadLocale() ?? AppLocalizations.defaultLocale;
-    _onboardingComplete = prefsRepository.onboardingComplete;
+    await _prefsRepository.init();
+    final themeValue = _prefsRepository.getThemeMode();
+    if (themeValue == 'dark') {
+      _themeMode = ThemeMode.dark;
+    } else {
+      _themeMode = ThemeMode.light;
+    }
+
+    final savedLocale = _prefsRepository.getLocale();
+    if (savedLocale != null) {
+      _locale = Locale(savedLocale);
+    }
+
+    _remindersEnabled = _prefsRepository.getRemindersEnabled();
+    _onboardingDone = _prefsRepository.getOnboardingDone();
     notifyListeners();
   }
 
-  Future<void> toggleDarkMode(bool value) async {
-    _themeMode = value ? ThemeMode.dark : ThemeMode.light;
-    await prefsRepository.saveThemeMode(_themeMode);
+  Future<void> toggleTheme() async {
+    _themeMode = _themeMode == ThemeMode.light ? ThemeMode.dark : ThemeMode.light;
+    await _prefsRepository.setThemeMode(_themeMode == ThemeMode.dark ? 'dark' : 'light');
     notifyListeners();
   }
 
-  Future<void> setThemeMode(ThemeMode mode) async {
-    _themeMode = mode;
-    await prefsRepository.saveThemeMode(mode);
-    notifyListeners();
-  }
-
-  Future<void> setLocale(Locale locale) async {
+  Future<void> changeLocale(Locale locale) async {
     _locale = locale;
-    await prefsRepository.saveLocale(locale);
+    await _prefsRepository.setLocale(locale.languageCode);
     notifyListeners();
   }
 
-  Future<void> completeOnboarding() async {
-    _onboardingComplete = true;
-    await prefsRepository.setOnboardingComplete(true);
+  Future<void> setRemindersEnabled(bool value) async {
+    _remindersEnabled = value;
+    await _prefsRepository.setRemindersEnabled(value);
     notifyListeners();
   }
 
-  Future<void> clearLocal() async {
-    await prefsRepository.clear();
-    await load();
+  Future<void> setOnboardingDone(bool value) async {
+    _onboardingDone = value;
+    await _prefsRepository.setOnboardingDone(value);
+    notifyListeners();
   }
 }

@@ -1,186 +1,99 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
-import '../../controllers/settings_controller.dart';
 import '../../core/localization/app_localizations.dart';
-import '../../core/providers/notifier_provider.dart';
+import '../../core/routing/app_router.dart';
+import '../../core/utils/app_scope.dart';
 
-class OnboardingScreen extends StatefulWidget {
+class OnboardingScreen extends StatelessWidget {
   const OnboardingScreen({super.key});
 
   @override
-  State<OnboardingScreen> createState() => _OnboardingScreenState();
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final settings = AppScope.of(context).settingsController;
+
+    return Scaffold(
+      body: Container(
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+            image: NetworkImage('https://images.unsplash.com/photo-1585238342028-4bbc5a00e12a'),
+            fit: BoxFit.cover,
+          ),
+        ),
+        child: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Color(0xAA0E1116), Color(0x990E1116)],
+              begin: Alignment.bottomCenter,
+              end: Alignment.topCenter,
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(32),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.end,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'خطة صحة شخصية مبنية على أهدافك',
+                  style: Theme.of(context)
+                      .textTheme
+                      .displayLarge
+                      ?.copyWith(color: Colors.white),
+                ).animate().fadeIn(260.ms).moveY(begin: 18, end: 0),
+                const SizedBox(height: 16),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: const [
+                    _Bullet(text: 'تتبع الجرعات والتقدّم'),
+                    _Bullet(text: 'توصيات ذكية'),
+                    _Bullet(text: 'تذكيرات مريحة'),
+                  ],
+                ),
+                const SizedBox(height: 28),
+                FilledButton.icon(
+                  onPressed: () async {
+                    await settings.setOnboardingDone(true);
+                    if (context.mounted) {
+                      Navigator.of(context).pushReplacementNamed(AppRoutes.login);
+                    }
+                  },
+                  icon: const FaIcon(FontAwesomeIcons.arrowRight),
+                  label: Text(l10n.translate('start')),
+                ).animate().fadeIn(260.ms).moveY(begin: 12, end: 0),
+                const SizedBox(height: 36),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
-class _OnboardingScreenState extends State<OnboardingScreen> {
-  final _controller = PageController();
-  int _index = 0;
+class _Bullet extends StatelessWidget {
+  const _Bullet({required this.text});
 
-  final _pages = const [
-    {
-      'image': 'https://images.unsplash.com/photo-1642790116364-46db109d7d31',
-      'title': 'Smart trading. Night interface. Live data.',
-      'bullets': [
-        'Stocks, crypto & metals',
-        'Alerts & analyst ratings',
-        'Easy buy & sell orders'
-      ],
-    },
-    {
-      'image': 'https://images.unsplash.com/photo-1618005198919-d3d4b5a92eee',
-      'title': 'Track your positions in real time',
-      'bullets': [
-        'Dark & light modes',
-        'Pull-to-refresh portfolios',
-        'Mock data with instant feedback'
-      ],
-    },
-    {
-      'image': 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4',
-      'title': 'Send, receive & swap effortlessly',
-      'bullets': [
-        'Capsule actions and keypads',
-        'Watchlists synced locally',
-        'Bi-lingual layout with RTL'
-      ],
-    },
-  ];
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
+  final String text;
 
   @override
   Widget build(BuildContext context) {
-    final strings = AppLocalizations.of(context);
-    final settings = NotifierProvider.of<SettingsController>(context);
-    return Scaffold(
-      body: Stack(
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
         children: [
-          PageView.builder(
-            controller: _controller,
-            onPageChanged: (value) => setState(() => _index = value),
-            itemCount: _pages.length,
-            itemBuilder: (context, index) {
-              final page = _pages[index];
-              return Stack(
-                fit: StackFit.expand,
-                children: [
-                  Image.network(page['image'] as String, fit: BoxFit.cover),
-                  Container(color: Colors.black.withOpacity(0.6)),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 48),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Spacer(),
-                        Text(
-                          strings.t('app_name'),
-                          style: Theme.of(context).textTheme.display?.copyWith(color: Colors.white),
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          page['title'] as String,
-                          style: Theme.of(context)
-                              .textTheme
-                              .h1
-                              .copyWith(color: Colors.white, fontWeight: FontWeight.w700),
-                        ).animate().fadeIn(500.ms).moveY(begin: 20, end: 0),
-                        const SizedBox(height: 16),
-                        ...List<Widget>.from(
-                          (page['bullets'] as List<String>).map(
-                            (bullet) => Padding(
-                              padding: const EdgeInsets.only(bottom: 8),
-                              child: Row(
-                                children: [
-                                  const Icon(Icons.check_rounded, color: Colors.white, size: 18),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: Text(
-                                      bullet,
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodyMedium
-                                          ?.copyWith(color: Colors.white70),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 32),
-                        Row(
-                          children: List.generate(
-                            _pages.length,
-                            (dot) => AnimatedContainer(
-                              duration: const Duration(milliseconds: 250),
-                              margin: const EdgeInsets.only(right: 6),
-                              height: 8,
-                              width: _index == dot ? 24 : 10,
-                              decoration: BoxDecoration(
-                                color: _index == dot ? Colors.white : Colors.white38,
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: OutlinedButton(
-                                onPressed: () async {
-                                  await settings.completeOnboarding();
-                                  if (!mounted) return;
-                                  Navigator.of(context).pushReplacementNamed('auth.login');
-                                },
-                                style: OutlinedButton.styleFrom(
-                                  foregroundColor: Colors.white,
-                                  side: const BorderSide(color: Colors.white54),
-                                ),
-                                child: Text(strings.t('skip')),
-                              ),
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: FilledButton(
-                                onPressed: () async {
-                                  if (_index < _pages.length - 1) {
-                                    _controller.animateToPage(
-                                      _index + 1,
-                                      duration: const Duration(milliseconds: 400),
-                                      curve: Curves.easeOut,
-                                    );
-                                  } else {
-                                    await settings.completeOnboarding();
-                                    if (!mounted) return;
-                                    Navigator.of(context).pushReplacementNamed('auth.login');
-                                  }
-                                },
-                                style: FilledButton.styleFrom(
-                                  backgroundColor: Colors.white,
-                                  foregroundColor: Colors.black,
-                                  shape: const StadiumBorder(),
-                                ),
-                                child: Text(_index < _pages.length - 1
-                                    ? strings.t('continue')
-                                    : strings.t('start')),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              );
-            },
+          const Icon(Icons.check_circle, color: Colors.white70),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              text,
+              style: const TextStyle(color: Colors.white70),
+            ),
           ),
         ],
-      ),
+      ).animate().fadeIn(260.ms).moveY(begin: 10, end: 0),
     );
   }
 }

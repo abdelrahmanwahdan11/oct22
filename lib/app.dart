@@ -1,127 +1,81 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
-import 'controllers/auth_controller.dart';
-import 'controllers/fx_commodities_controller.dart';
-import 'controllers/market_controller.dart';
-import 'controllers/news_controller.dart';
-import 'controllers/orders_controller.dart';
-import 'controllers/portfolio_controller.dart';
+import 'controllers/feature_controller.dart';
+import 'controllers/pass_controller.dart';
+import 'controllers/plan_controller.dart';
 import 'controllers/settings_controller.dart';
+import 'controllers/store_controller.dart';
+import 'controllers/supplements_controller.dart';
+import 'controllers/trainer_controller.dart';
 import 'core/localization/app_localizations.dart';
-import 'core/providers/notifier_provider.dart';
 import 'core/routing/app_router.dart';
 import 'core/theme/app_theme.dart';
-import 'data/repositories/fx_commodities_repository.dart';
-import 'data/repositories/market_repository.dart';
+import 'core/utils/app_scope.dart';
+import 'data/repositories/user_repository.dart';
 
-class TradeXApp extends StatefulWidget {
-  const TradeXApp({
+class LumaApp extends StatelessWidget {
+  const LumaApp({
     super.key,
     required this.settingsController,
-    required this.authController,
-    required this.marketController,
-    required this.portfolioController,
-    required this.fxController,
-    required this.newsController,
-    required this.ordersController,
-    required this.marketRepository,
-    required this.fxRepository,
+    required this.supplementsController,
+    required this.planController,
+    required this.userRepository,
+    required this.trainerController,
+    required this.storeController,
+    required this.featureController,
+    required this.passController,
   });
 
   final SettingsController settingsController;
-  final AuthController authController;
-  final MarketController marketController;
-  final PortfolioController portfolioController;
-  final FxCommoditiesController fxController;
-  final NewsController newsController;
-  final OrdersController ordersController;
-  final MarketRepository marketRepository;
-  final FxCommoditiesRepository fxRepository;
-
-  @override
-  State<TradeXApp> createState() => _TradeXAppState();
-}
-
-class _TradeXAppState extends State<TradeXApp> {
-  late final AppRouter _router;
-
-  @override
-  void initState() {
-    super.initState();
-    _router = AppRouter();
-  }
-
-  @override
-  void dispose() {
-    widget.settingsController.dispose();
-    widget.authController.dispose();
-    widget.marketController.dispose();
-    widget.portfolioController.dispose();
-    widget.fxController.dispose();
-    widget.newsController.dispose();
-    widget.ordersController.dispose();
-    unawaited(widget.marketRepository.dispose());
-    widget.fxRepository.dispose();
-    super.dispose();
-  }
+  final SupplementsController supplementsController;
+  final PlanController planController;
+  final UserRepository userRepository;
+  final TrainerController trainerController;
+  final StoreController storeController;
+  final FeatureController featureController;
+  final PassController passController;
 
   @override
   Widget build(BuildContext context) {
-    return NotifierProvider<SettingsController>(
-      notifier: widget.settingsController,
-      child: NotifierProvider<AuthController>(
-        notifier: widget.authController,
-        child: NotifierProvider<MarketController>(
-          notifier: widget.marketController,
-          child: NotifierProvider<PortfolioController>(
-            notifier: widget.portfolioController,
-            child: NotifierProvider<FxCommoditiesController>(
-              notifier: widget.fxController,
-              child: NotifierProvider<NewsController>(
-                notifier: widget.newsController,
-                child: NotifierProvider<OrdersController>(
-                  notifier: widget.ordersController,
-                  child: Builder(
-                    builder: (context) {
-                      final settings = NotifierProvider.of<SettingsController>(context);
-                      return MaterialApp(
-                        debugShowCheckedModeBanner: false,
-                        title: 'TradeX',
-                        theme: TradeXTheme.light(),
-                        darkTheme: TradeXTheme.dark(),
-                        themeMode: settings.themeMode,
-                        locale: settings.locale,
-                        supportedLocales: AppLocalizations.supportedLocales,
-                        localizationsDelegates: const [
-                          AppLocalizationsDelegate(),
-                          GlobalMaterialLocalizations.delegate,
-                          GlobalWidgetsLocalizations.delegate,
-                          GlobalCupertinoLocalizations.delegate,
-                        ],
-                        localeResolutionCallback: (locale, supported) {
-                          if (locale == null) return AppLocalizations.defaultLocale;
-                          for (final supportedLocale in supported) {
-                            if (supportedLocale.languageCode == locale.languageCode) {
-                              return supportedLocale;
-                            }
-                          }
-                          return AppLocalizations.defaultLocale;
-                        },
-                        initialRoute:
-                            settings.onboardingComplete ? 'auth.login' : 'onboarding',
-                        onGenerateRoute: _router.onGenerateRoute,
-                      );
-                    },
-                  ),
-                ),
-              ),
+    return AnimatedBuilder(
+      animation: settingsController,
+      builder: (context, _) {
+        return Directionality(
+          textDirection: settingsController.locale.languageCode == 'ar'
+              ? TextDirection.rtl
+              : TextDirection.ltr,
+          child: AppScope(
+            settingsController: settingsController,
+            supplementsController: supplementsController,
+            planController: planController,
+            userRepository: userRepository,
+            trainerController: trainerController,
+            storeController: storeController,
+            featureController: featureController,
+            passController: passController,
+            child: MaterialApp(
+              debugShowCheckedModeBanner: false,
+              title: 'Luma+ Wellness',
+              locale: settingsController.locale,
+              supportedLocales: AppLocalizations.supportedLocales,
+              localizationsDelegates: const [
+                AppLocalizations.delegate,
+                GlobalMaterialLocalizations.delegate,
+                GlobalWidgetsLocalizations.delegate,
+                GlobalCupertinoLocalizations.delegate,
+              ],
+              theme: AppTheme.buildLightTheme(),
+              darkTheme: AppTheme.buildDarkTheme(),
+              themeMode: settingsController.themeMode,
+              initialRoute: settingsController.onboardingDone
+                  ? AppRoutes.dashboard
+                  : AppRoutes.onboarding,
+              onGenerateRoute: onGenerateRoute,
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }
